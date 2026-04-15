@@ -40,6 +40,7 @@ You are an expert full-stack developer building the "Legal Matter Tracker" appli
 - Write clean, maintainable, self documenting code.
 - Follow consistent naming conventions and project structure.
 - Update .gitignore to exclude sensitive files and unnecessary build artifacts.
+- Never erase existing comment texts
 
 ## Out of Scope
 Skip the following to focus on core constraints:

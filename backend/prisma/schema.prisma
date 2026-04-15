@@ -1,13 +1,60 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+
+  // A user can have many matters
+  matters   Matter[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Matter {
+  id          Int         @id @default(autoincrement())
+  title       String
+  clientName  String    
+  status      MatterStatus @default(OPEN)
+  
+  // A matter is tied to a user
+  userId      Int
+  user        User        @relation(fields: [userId], references: [id])
+  
+  // A matter has many time entries
+  timeEntries TimeEntry[]
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model TimeEntry {
+  id          Int      @id @default(autoincrement())
+  description String
+  date        DateTime @default(now()) 
+  minutes     Int    
+  
+  // A timeEntry is tied to a matter
+  matterId    Int
+  matter      Matter   @relation(fields: [matterId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Enum for the state of the matter
+enum MatterStatus {
+  OPEN
+  CLOSED
 }
