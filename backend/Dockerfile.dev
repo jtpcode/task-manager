@@ -1,0 +1,21 @@
+FROM node:24-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+# Config files required by the NestJS compiler and Prisma CLI
+COPY tsconfig*.json nest-cli.json prisma.config.ts ./
+
+# Generate Prisma Client (schema is mounted via volume at runtime,
+# but we need it present at build time for initial generation)
+COPY prisma ./prisma/
+RUN npx prisma generate
+
+EXPOSE 3000
+
+# Source code is mounted as a volume — no COPY . . or build step needed.
+# Migrations and seed run on every start, then NestJS watch mode takes over.
+CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && npm run start:dev"]
