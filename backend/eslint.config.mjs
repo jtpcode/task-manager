@@ -3,6 +3,7 @@ import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import stylistic from "@stylistic/eslint-plugin";
 
 export default tseslint.config(
   {
@@ -25,11 +26,20 @@ export default tseslint.config(
     },
   },
   {
+    plugins: {
+      "@stylistic": stylistic,
+    },
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
+      '@stylistic/semi': 'error',
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn',
       "prettier/prettier": ["error", { endOfLine: "auto" }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { 'argsIgnorePattern': '^_' }
+      ],
     },
   },
 );
