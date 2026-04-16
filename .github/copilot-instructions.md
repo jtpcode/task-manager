@@ -16,7 +16,7 @@ You are an expert full-stack developer building the "Legal Matter Tracker" appli
 - **Validation**: Enforce input validation using NestJS pipes and `class-validator`. Always throw clear error messages and return `422 Unprocessable Entity` for validation failures.
 - **Error Handling**: Consistently return proper HTTP status codes (`404 Not Found` for missing resources, `401 Unauthorized` for bad auth, `422` for validation).
 - **Authentication**: `POST /auth/login` must generate and return a JWT. Guard all other API endpoints by requiring an `Authorization: Bearer <token>` header.
-- **Database Architecture**: Design a strict, normalized PostgreSQL schema with foreign keys and database-level constraints. Ensure migrations are tracked (via Prisma Migrate) and write a seeding script that inserts 3 sample matters with multiple time entries each.
+- **Database Architecture**: Design a strict, normalized PostgreSQL schema with foreign keys and database-level constraints. Ensure migrations are tracked (via Prisma Migrate).
 - **LLM Integration**: Implement `GET /matters/:id/summary` to call an LLM API (e.g., OpenAI/Anthropic/free tier). Use environment variables for API keys and write prompts that yield readable, actionable summaries of logged time.
 
 ## Frontend Development Rules (React)
