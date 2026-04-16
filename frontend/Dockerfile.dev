@@ -6,8 +6,9 @@ COPY package*.json ./
 
 RUN npm install
 
+# Copy root-level config files needed by Vite at runtime
+COPY index.html vite.config.ts tsconfig*.json ./
+
 EXPOSE 5173
 
-# Source code is mounted as a volume — no COPY . . needed.
-# Vite dev server with --host 0.0.0.0 exposes HMR to the Docker network.
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
