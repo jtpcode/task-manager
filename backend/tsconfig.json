@@ -23,6 +23,7 @@
     "noFallthroughCasesInSwitch": true,
     "noEmit": true,
     "noImplicitReturns": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": ["jest", "node"]
   }
 }
