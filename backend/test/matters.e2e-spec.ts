@@ -174,4 +174,92 @@ describe('Matters (e2e)', () => {
       expect(titles).not.toContain('Other User Matter');
     });
   });
+
+  describe('POST /matters', () => {
+    it('returns 401 when no token is provided', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/matters')
+        .send({ title: 'New Matter', clientName: 'New Client' });
+      expect(res.status).toBe(401);
+    });
+
+    it('returns 401 when an invalid token is provided', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/matters')
+        .set('Authorization', 'Bearer invalidtoken')
+        .send({ title: 'New Matter', clientName: 'New Client' });
+      expect(res.status).toBe(401);
+    });
+
+    it('returns 422 when title is missing', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/matters')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ clientName: 'New Client' });
+      expect(res.status).toBe(422);
+    });
+
+    it('returns 422 when clientName is missing', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/matters')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ title: 'New Matter' });
+      expect(res.status).toBe(422);
+    });
+
+    it('returns 422 when title is empty', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/matters')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ title: '', clientName: 'New Client' });
+      expect(res.status).toBe(422);
+    });
+
+    it('creates a matter with default OPEN status and returns 201', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/matters')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ title: 'Created Matter', clientName: 'Created Client' });
+
+      expect(res.status).toBe(201);
+
+      const matter = res.body as MatterResponse;
+      expect(matter.title).toBe('Created Matter');
+      expect(matter.clientName).toBe('Created Client');
+      expect(matter.status).toBe('OPEN');
+      expect(matter.totalMinutes).toBe(0);
+      expect(matter).toHaveProperty('id');
+      expect(matter).toHaveProperty('createdAt');
+      expect(matter).toHaveProperty('updatedAt');
+    });
+
+    it('creates a matter with explicit CLOSED status', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/matters')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          title: 'Closed Matter',
+          clientName: 'Closed Client',
+          status: 'CLOSED',
+        });
+
+      expect(res.status).toBe(201);
+      expect((res.body as MatterResponse).status).toBe('CLOSED');
+    });
+
+    it('does not create matters for other users', async () => {
+      await request(app.getHttpServer())
+        .post('/matters')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ title: 'Isolated Matter', clientName: 'Isolated Client' });
+
+      // Verify it appears in the creating user's list
+      const listRes = await request(app.getHttpServer())
+        .get('/matters')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      const titles = (listRes.body as MatterResponse[]).map((m) => m.title);
+      expect(titles).toContain('Isolated Matter');
+    });
+  });
 });
