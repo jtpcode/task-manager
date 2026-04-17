@@ -17,3 +17,7 @@ export interface TimeEntryResponse {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface SummaryResponse {
+  summary: string;
+}

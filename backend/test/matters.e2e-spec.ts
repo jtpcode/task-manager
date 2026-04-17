@@ -482,4 +482,46 @@ describe('Matters (e2e)', () => {
       );
     });
   });
+
+  describe('GET /matters/:id/summary', () => {
+    it('returns 401 when no token is provided', async () => {
+      const res = await request(app.getHttpServer()).get(
+        `/matters/${alphaMatterId}/summary`,
+      );
+      expect(res.status).toBe(401);
+    });
+
+    it('returns 401 when an invalid token is provided', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/matters/${alphaMatterId}/summary`)
+        .set('Authorization', 'Bearer invalidtoken');
+      expect(res.status).toBe(401);
+    });
+
+    it('returns 404 for a non-existent matter id', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/matters/999999/summary')
+        .set('Authorization', `Bearer ${authToken}`);
+      expect(res.status).toBe(404);
+    });
+
+    it('returns 404 for a matter belonging to another user', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/matters/${otherMatterId}/summary`)
+        .set('Authorization', `Bearer ${authToken}`);
+      expect(res.status).toBe(404);
+    });
+
+    it('returns 503 when GOOGLE_AI_API_KEY is not set', async () => {
+      const original = process.env['GOOGLE_AI_API_KEY'];
+      delete process.env['GOOGLE_AI_API_KEY'];
+
+      const res = await request(app.getHttpServer())
+        .get(`/matters/${alphaMatterId}/summary`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      process.env['GOOGLE_AI_API_KEY'] = original;
+      expect(res.status).toBe(503);
+    });
+  });
 });

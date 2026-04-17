@@ -9,6 +9,7 @@ import {
 import { MattersService } from './matters.service';
 import type {
   MatterResponse,
+  SummaryResponse,
   TimeEntryResponse,
 } from './interfaces/matter-response.interface';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -48,5 +49,13 @@ export class MattersController {
     @CurrentUser() user: JwtPayload,
   ): Promise<TimeEntryResponse> {
     return this.mattersService.createTimeEntry(user.sub, id, dto);
+  }
+
+  @Get(':id/summary')
+  getMatterSummary(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<SummaryResponse> {
+    return this.mattersService.getMatterSummary(user.sub, id);
   }
 }

@@ -1,7 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
+import { GoogleGenAI } from '@google/genai';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   MatterResponse,
+  SummaryResponse,
   TimeEntryResponse,
 } from './interfaces/matter-response.interface';
 import { CreateMatterDto } from './dto/create-matter.dto';
@@ -107,5 +114,56 @@ export class MattersService {
       createdAt: entry.createdAt,
       updatedAt: entry.updatedAt,
     };
+  }
+
+  async getMatterSummary(
+    userId: number,
+    matterId: number,
+  ): Promise<SummaryResponse> {
+    const matter = await this.prisma.matter.findFirst({
+      where: { id: matterId, userId },
+      include: { timeEntries: { orderBy: { date: 'desc' } } },
+    });
+
+    if (!matter) {
+      throw new NotFoundException(`Matter with id ${matterId} not found`);
+    }
+
+    const apiKey = process.env['GOOGLE_AI_API_KEY'];
+    if (!apiKey) {
+      throw new ServiceUnavailableException(
+        'LLM API key is not configured on the server.',
+      );
+    }
+
+    const entriesText =
+      matter.timeEntries.length === 0
+        ? 'No time entries have been logged yet.'
+        : matter.timeEntries
+            .map(
+              (e) =>
+                `- ${e.date.toISOString().slice(0, 10)}: ${e.description} (${e.minutes} minutes)`,
+            )
+            .join('\n');
+
+    const prompt =
+      `You are a legal work summarizer. Summarize the work logged for the following legal matter in 2–4 concise, readable sentences suitable for a client update.\n\n` +
+      `Matter: ${matter.title}\n` +
+      `Client: ${matter.clientName}\n` +
+      `Status: ${matter.status}\n\n` +
+      `Logged time entries:\n${entriesText}`;
+
+    try {
+      const ai = new GoogleGenAI({ apiKey });
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: prompt,
+      });
+      return { summary: response.text ?? '' };
+    } catch {
+      throw new InternalServerErrorException(
+        'Failed to generate summary. Please try again.',
+      );
+    }
   }
 }
