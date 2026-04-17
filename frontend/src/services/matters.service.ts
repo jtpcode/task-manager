@@ -1,5 +1,5 @@
 import { ApiError } from './apiError';
-import type { Matter } from '../types/api';
+import type { Matter, CreateMatterRequest } from '../types/api';
 
 export const fetchMatters = async (token: string): Promise<Matter[]> => {
   const response = await fetch('/api/matters', {
@@ -11,4 +11,24 @@ export const fetchMatters = async (token: string): Promise<Matter[]> => {
   }
 
   return response.json() as Promise<Matter[]>;
-}
+};
+
+export const createMatter = async (
+  token: string,
+  data: CreateMatterRequest,
+): Promise<Matter> => {
+  const response = await fetch('/api/matters', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new ApiError(response.status);
+  }
+
+  return response.json() as Promise<Matter>;
+};

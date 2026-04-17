@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
+import Collapse from '@mui/material/Collapse';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -19,6 +20,7 @@ import { useAuth } from '../hooks/useAuth';
 import { fetchMatters } from '../services/matters.service';
 import { ApiError } from '../services/apiError';
 import type { Matter } from '../types/api';
+import CreateMatterForm from '../components/CreateMatterForm';
 
 const formatMinutes = (minutes: number): string => {
   const h = Math.floor(minutes / 60);
@@ -40,6 +42,7 @@ const MatterListPage = () => {
   const [matters, setMatters] = useState<Matter[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -90,9 +93,31 @@ const MatterListPage = () => {
       </AppBar>
 
       <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4, px: 2 }}>
-      <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3 }}>
-        Matters
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h5" sx={{ fontWeight: 'bold', flexGrow: 1 }}>
+          Matters
+        </Typography>
+        <Button
+          variant={showForm ? 'outlined' : 'contained'}
+          onClick={() => setShowForm((prev) => !prev)}
+        >
+          {showForm ? 'Cancel' : 'New Matter'}
+        </Button>
+      </Box>
+
+      <Collapse in={showForm}>
+        <Paper sx={{ p: 3, mb: 3 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 'medium', mb: 2 }}>
+            New Matter
+          </Typography>
+          <CreateMatterForm
+            onSuccess={(matter) => {
+              setMatters((prev) => [matter, ...prev]);
+              setShowForm(false);
+            }}
+          />
+        </Paper>
+      </Collapse>
 
       {matters.length === 0 ? (
         <Typography color="text.secondary">No matters found.</Typography>
