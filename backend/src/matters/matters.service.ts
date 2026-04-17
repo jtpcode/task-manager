@@ -1,6 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { MatterResponse } from './interfaces/matter-response.interface';
+import {
+  MatterResponse,
+  TimeEntryResponse,
+} from './interfaces/matter-response.interface';
 import { CreateMatterDto } from './dto/create-matter.dto';
 
 @Injectable()
@@ -41,6 +44,34 @@ export class MattersService {
       ),
       createdAt: matter.createdAt,
       updatedAt: matter.updatedAt,
+    }));
+  }
+
+  async findTimeEntriesByMatter(
+    userId: number,
+    matterId: number,
+  ): Promise<TimeEntryResponse[]> {
+    const matter = await this.prisma.matter.findFirst({
+      where: { id: matterId, userId },
+    });
+
+    if (!matter) {
+      throw new NotFoundException(`Matter with id ${matterId} not found`);
+    }
+
+    const entries = await this.prisma.timeEntry.findMany({
+      where: { matterId },
+      orderBy: { date: 'desc' },
+    });
+
+    return entries.map((entry) => ({
+      id: entry.id,
+      description: entry.description,
+      date: entry.date,
+      minutes: entry.minutes,
+      matterId: entry.matterId,
+      createdAt: entry.createdAt,
+      updatedAt: entry.updatedAt,
     }));
   }
 }

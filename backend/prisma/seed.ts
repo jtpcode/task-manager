@@ -81,7 +81,7 @@ const main = async () => {
   });
 
   console.log('Database seeded successfully!');
-}
+};
 
 main()
   .catch((e) => {

@@ -9,7 +9,10 @@ import { App } from 'supertest/types';
 import * as bcrypt from 'bcrypt';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
-import { MatterResponse } from '../src/matters/interfaces/matter-response.interface';
+import {
+  MatterResponse,
+  TimeEntryResponse,
+} from '../src/matters/interfaces/matter-response.interface';
 import { clearDatabase } from './utils/db';
 
 const TEST_USER_EMAIL = 'test-matters@example.com';
@@ -21,6 +24,9 @@ describe('Matters (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
   let authToken: string;
+  let alphaMatterId: number;
+  let betaMatterId: number;
+  let otherMatterId: number;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -94,6 +100,21 @@ describe('Matters (e2e)', () => {
       .send({ email: TEST_USER_EMAIL, password: TEST_USER_PASSWORD });
 
     authToken = (loginRes.body as { access_token: string }).access_token;
+
+    const alphaM = await prisma.matter.findFirstOrThrow({
+      where: { title: 'Test Matter Alpha', userId: user.id },
+    });
+    alphaMatterId = alphaM.id;
+
+    const betaM = await prisma.matter.findFirstOrThrow({
+      where: { title: 'Test Matter Beta', userId: user.id },
+    });
+    betaMatterId = betaM.id;
+
+    const otherM = await prisma.matter.findFirstOrThrow({
+      where: { title: 'Other User Matter' },
+    });
+    otherMatterId = otherM.id;
 
     expect(user).toBeDefined();
   });
@@ -260,6 +281,94 @@ describe('Matters (e2e)', () => {
 
       const titles = (listRes.body as MatterResponse[]).map((m) => m.title);
       expect(titles).toContain('Isolated Matter');
+    });
+  });
+
+  describe('GET /matters/:id/time-entries', () => {
+    it('returns 401 when no token is provided', async () => {
+      const res = await request(app.getHttpServer()).get(
+        `/matters/${alphaMatterId}/time-entries`,
+      );
+      expect(res.status).toBe(401);
+    });
+
+    it('returns 401 when an invalid token is provided', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/matters/${alphaMatterId}/time-entries`)
+        .set('Authorization', 'Bearer invalidtoken');
+      expect(res.status).toBe(401);
+    });
+
+    it('returns 404 for a non-existent matter id', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/matters/999999/time-entries')
+        .set('Authorization', `Bearer ${authToken}`);
+      expect(res.status).toBe(404);
+    });
+
+    it('returns 404 for a matter belonging to another user', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/matters/${otherMatterId}/time-entries`)
+        .set('Authorization', `Bearer ${authToken}`);
+      expect(res.status).toBe(404);
+    });
+
+    it('returns 200 with an array of time entries', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/matters/${alphaMatterId}/time-entries`)
+        .set('Authorization', `Bearer ${authToken}`);
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+    });
+
+    it('returns the correct number of entries for each matter', async () => {
+      const alphaRes = await request(app.getHttpServer())
+        .get(`/matters/${alphaMatterId}/time-entries`)
+        .set('Authorization', `Bearer ${authToken}`);
+      expect((alphaRes.body as TimeEntryResponse[]).length).toBe(2);
+
+      const betaRes = await request(app.getHttpServer())
+        .get(`/matters/${betaMatterId}/time-entries`)
+        .set('Authorization', `Bearer ${authToken}`);
+      expect((betaRes.body as TimeEntryResponse[]).length).toBe(1);
+    });
+
+    it('returns time entries with the correct fields', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/matters/${alphaMatterId}/time-entries`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      const entries = res.body as TimeEntryResponse[];
+      for (const entry of entries) {
+        expect(entry).toHaveProperty('id');
+        expect(entry).toHaveProperty('description');
+        expect(entry).toHaveProperty('date');
+        expect(entry).toHaveProperty('minutes');
+        expect(entry).toHaveProperty('matterId');
+        expect(entry).toHaveProperty('createdAt');
+        expect(entry).toHaveProperty('updatedAt');
+        expect(typeof entry.minutes).toBe('number');
+        expect(entry.matterId).toBe(alphaMatterId);
+      }
+    });
+
+    it('returns correct minutes values for Alpha matter entries', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/matters/${alphaMatterId}/time-entries`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      const entries = res.body as TimeEntryResponse[];
+      const minuteValues = entries.map((e) => e.minutes).sort((a, b) => a - b);
+      expect(minuteValues).toEqual([60, 90]);
+    });
+
+    it('returns correct minutes value for Beta matter entry', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/matters/${betaMatterId}/time-entries`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      const entries = res.body as TimeEntryResponse[];
+      expect(entries[0].minutes).toBe(30);
     });
   });
 });

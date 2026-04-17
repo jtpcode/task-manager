@@ -1,6 +1,16 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { MattersService } from './matters.service';
-import type { MatterResponse } from './interfaces/matter-response.interface';
+import type {
+  MatterResponse,
+  TimeEntryResponse,
+} from './interfaces/matter-response.interface';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { CreateMatterDto } from './dto/create-matter.dto';
@@ -20,5 +30,13 @@ export class MattersController {
   @Get()
   findAll(@CurrentUser() user: JwtPayload): Promise<MatterResponse[]> {
     return this.mattersService.findAll(user.sub);
+  }
+
+  @Get(':id/time-entries')
+  findTimeEntries(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<TimeEntryResponse[]> {
+    return this.mattersService.findTimeEntriesByMatter(user.sub, id);
   }
 }
