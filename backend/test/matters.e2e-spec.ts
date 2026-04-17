@@ -371,4 +371,115 @@ describe('Matters (e2e)', () => {
       expect(entries[0].minutes).toBe(30);
     });
   });
+
+  describe('POST /matters/:id/time-entries', () => {
+    it('returns 401 when no token is provided', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/matters/${alphaMatterId}/time-entries`)
+        .send({ description: 'Work', minutes: 30 });
+      expect(res.status).toBe(401);
+    });
+
+    it('returns 401 when an invalid token is provided', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/matters/${alphaMatterId}/time-entries`)
+        .set('Authorization', 'Bearer invalidtoken')
+        .send({ description: 'Work', minutes: 30 });
+      expect(res.status).toBe(401);
+    });
+
+    it('returns 404 for a non-existent matter id', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/matters/999999/time-entries')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ description: 'Work', minutes: 30 });
+      expect(res.status).toBe(404);
+    });
+
+    it('returns 404 for a matter belonging to another user', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/matters/${otherMatterId}/time-entries`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ description: 'Work', minutes: 30 });
+      expect(res.status).toBe(404);
+    });
+
+    it('returns 422 when description is missing', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/matters/${alphaMatterId}/time-entries`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ minutes: 30 });
+      expect(res.status).toBe(422);
+    });
+
+    it('returns 422 when minutes is missing', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/matters/${alphaMatterId}/time-entries`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ description: 'Work' });
+      expect(res.status).toBe(422);
+    });
+
+    it('returns 422 when minutes is 0', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/matters/${alphaMatterId}/time-entries`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ description: 'Work', minutes: 0 });
+      expect(res.status).toBe(422);
+    });
+
+    it('returns 422 when minutes is negative', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/matters/${alphaMatterId}/time-entries`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ description: 'Work', minutes: -10 });
+      expect(res.status).toBe(422);
+    });
+
+    it('creates a time entry with an explicit date and returns 201', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/matters/${betaMatterId}/time-entries`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ description: 'Review', minutes: 45, date: '2026-01-15' });
+
+      expect(res.status).toBe(201);
+      const entry = res.body as TimeEntryResponse;
+      expect(entry.description).toBe('Review');
+      expect(entry.minutes).toBe(45);
+      expect(entry.matterId).toBe(betaMatterId);
+      expect(entry).toHaveProperty('id');
+      expect(entry).toHaveProperty('date');
+      expect(entry).toHaveProperty('createdAt');
+      expect(entry).toHaveProperty('updatedAt');
+    });
+
+    it('creates a time entry without a date (defaults to now) and returns 201', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/matters/${betaMatterId}/time-entries`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ description: 'Filing', minutes: 20 });
+
+      expect(res.status).toBe(201);
+      const entry = res.body as TimeEntryResponse;
+      expect(entry.description).toBe('Filing');
+      expect(entry.minutes).toBe(20);
+      expect(entry).toHaveProperty('date');
+    });
+
+    it('new entry appears in subsequent GET /matters/:id/time-entries', async () => {
+      await request(app.getHttpServer())
+        .post(`/matters/${alphaMatterId}/time-entries`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ description: 'Verification entry', minutes: 15 });
+
+      const listRes = await request(app.getHttpServer())
+        .get(`/matters/${alphaMatterId}/time-entries`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      const entries = listRes.body as TimeEntryResponse[];
+      expect(entries.some((e) => e.description === 'Verification entry')).toBe(
+        true,
+      );
+    });
+  });
 });

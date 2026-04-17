@@ -14,6 +14,7 @@ import type {
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { CreateMatterDto } from './dto/create-matter.dto';
+import { CreateTimeEntryDto } from './dto/create-time-entry.dto';
 
 @Controller('matters')
 export class MattersController {
@@ -38,5 +39,14 @@ export class MattersController {
     @CurrentUser() user: JwtPayload,
   ): Promise<TimeEntryResponse[]> {
     return this.mattersService.findTimeEntriesByMatter(user.sub, id);
+  }
+
+  @Post(':id/time-entries')
+  addTimeEntry(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: CreateTimeEntryDto,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<TimeEntryResponse> {
+    return this.mattersService.createTimeEntry(user.sub, id, dto);
   }
 }

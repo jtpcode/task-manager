@@ -5,6 +5,7 @@ import {
   TimeEntryResponse,
 } from './interfaces/matter-response.interface';
 import { CreateMatterDto } from './dto/create-matter.dto';
+import { CreateTimeEntryDto } from './dto/create-time-entry.dto';
 
 @Injectable()
 export class MattersService {
@@ -73,5 +74,38 @@ export class MattersService {
       createdAt: entry.createdAt,
       updatedAt: entry.updatedAt,
     }));
+  }
+
+  async createTimeEntry(
+    userId: number,
+    matterId: number,
+    dto: CreateTimeEntryDto,
+  ): Promise<TimeEntryResponse> {
+    const matter = await this.prisma.matter.findFirst({
+      where: { id: matterId, userId },
+    });
+
+    if (!matter) {
+      throw new NotFoundException(`Matter with id ${matterId} not found`);
+    }
+
+    const entry = await this.prisma.timeEntry.create({
+      data: {
+        description: dto.description,
+        minutes: dto.minutes,
+        ...(dto.date !== undefined && { date: new Date(dto.date) }),
+        matterId,
+      },
+    });
+
+    return {
+      id: entry.id,
+      description: entry.description,
+      date: entry.date,
+      minutes: entry.minutes,
+      matterId: entry.matterId,
+      createdAt: entry.createdAt,
+      updatedAt: entry.updatedAt,
+    };
   }
 }
