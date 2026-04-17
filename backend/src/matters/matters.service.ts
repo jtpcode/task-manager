@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -129,6 +130,12 @@ export class MattersService {
       throw new NotFoundException(`Matter with id ${matterId} not found`);
     }
 
+    if (matter.timeEntries.length === 0) {
+      throw new BadRequestException(
+        'Cannot generate a summary: no time entries have been logged for this matter.',
+      );
+    }
+
     const apiKey = process.env['GOOGLE_AI_API_KEY'];
     if (!apiKey) {
       throw new ServiceUnavailableException(
@@ -136,15 +143,12 @@ export class MattersService {
       );
     }
 
-    const entriesText =
-      matter.timeEntries.length === 0
-        ? 'No time entries have been logged yet.'
-        : matter.timeEntries
-            .map(
-              (e) =>
-                `- ${e.date.toISOString().slice(0, 10)}: ${e.description} (${e.minutes} minutes)`,
-            )
-            .join('\n');
+    const entriesText = matter.timeEntries
+      .map(
+        (entry) =>
+          `- ${entry.date.toISOString().slice(0, 10)}: ${entry.description} (${entry.minutes} minutes)`,
+      )
+      .join('\n');
 
     const prompt =
       `You are a legal work summarizer. Summarize the work logged for the following legal matter in 2–4 concise, readable sentences suitable for a client update.\n\n` +

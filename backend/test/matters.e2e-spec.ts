@@ -523,5 +523,18 @@ describe('Matters (e2e)', () => {
       process.env['GOOGLE_AI_API_KEY'] = original;
       expect(res.status).toBe(503);
     });
+
+    it('returns 400 when the matter has no time entries', async () => {
+      const createRes = await request(app.getHttpServer())
+        .post('/matters')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ title: 'Empty Matter', clientName: 'Empty Client' });
+      const emptyMatterId = (createRes.body as MatterResponse).id;
+
+      const res = await request(app.getHttpServer())
+        .get(`/matters/${emptyMatterId}/summary`)
+        .set('Authorization', `Bearer ${authToken}`);
+      expect(res.status).toBe(400);
+    });
   });
 });
