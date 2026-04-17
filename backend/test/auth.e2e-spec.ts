@@ -9,6 +9,7 @@ import { App } from 'supertest/types';
 import * as bcrypt from 'bcrypt';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { clearDatabase } from './utils/db';
 
 const TEST_USER_EMAIL = 'test-auth@example.com';
 const TEST_USER_PASSWORD = 'password123';
@@ -34,7 +35,7 @@ describe('Auth (e2e)', () => {
     prisma = moduleFixture.get(PrismaService);
 
     // Ensure clean state then create test user
-    await prisma.user.deleteMany({ where: { email: TEST_USER_EMAIL } });
+    await clearDatabase(prisma);
     await prisma.user.create({
       data: {
         email: TEST_USER_EMAIL,
@@ -44,7 +45,7 @@ describe('Auth (e2e)', () => {
   });
 
   afterAll(async () => {
-    await prisma.user.deleteMany({ where: { email: TEST_USER_EMAIL } });
+    await clearDatabase(prisma);
     await app.close();
     await prisma.$disconnect();
   });
