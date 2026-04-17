@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
+import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
@@ -11,6 +13,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { useAuth } from '../hooks/useAuth';
 import { fetchMatters } from '../services/matters.service';
@@ -28,6 +31,11 @@ function formatMinutes(minutes: number): string {
 export default function MatterListPage() {
   const { token, logout } = useAuth();
   const navigate = useNavigate();
+
+  function handleLogout() {
+    logout();
+    navigate('/login', { replace: true });
+  }
 
   const [matters, setMatters] = useState<Matter[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,7 +77,19 @@ export default function MatterListPage() {
   }
 
   return (
-    <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4, px: 2 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.100' }}>
+      <AppBar position="static" elevation={1}>
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Legal Matter Tracker
+          </Typography>
+          <Button color="inherit" onClick={handleLogout}>
+            Logout
+          </Button>
+        </Toolbar>
+      </AppBar>
+
+      <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4, px: 2 }}>
       <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3 }}>
         Matters
       </Typography>
@@ -108,6 +128,7 @@ export default function MatterListPage() {
           </Table>
         </TableContainer>
       )}
+      </Box>
     </Box>
   );
 }
