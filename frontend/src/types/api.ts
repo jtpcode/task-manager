@@ -8,6 +8,12 @@ export interface CreateMatterRequest {
   status?: 'OPEN' | 'CLOSED';
 }
 
+export interface CreateTimeEntryRequest {
+  description: string;
+  minutes: number;
+  date?: string;
+}
+
 export interface Matter {
   id: number;
   title: string;
