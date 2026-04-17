@@ -17,3 +17,13 @@ export interface Matter {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface TimeEntry {
+  id: number;
+  description: string;
+  date: string;
+  minutes: number;
+  matterId: number;
+  createdAt: string;
+  updatedAt: string;
+}

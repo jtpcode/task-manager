@@ -134,7 +134,12 @@ const MatterListPage = () => {
             </TableHead>
             <TableBody>
               {matters.map((matter) => (
-                <TableRow key={matter.id} hover>
+                <TableRow
+                  key={matter.id}
+                  hover
+                  onClick={() => navigate(`/matters/${matter.id}`, { state: { matter } })}
+                  sx={{ cursor: 'pointer' }}
+                >
                   <TableCell>{matter.title}</TableCell>
                   <TableCell>{matter.clientName}</TableCell>
                   <TableCell>
