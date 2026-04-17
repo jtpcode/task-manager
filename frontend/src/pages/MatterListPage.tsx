@@ -20,29 +20,29 @@ import { fetchMatters } from '../services/matters.service';
 import { ApiError } from '../services/apiError';
 import type { Matter } from '../types/api';
 
-function formatMinutes(minutes: number): string {
+const formatMinutes = (minutes: number): string => {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   if (h === 0) return `${m}m`;
   if (m === 0) return `${h}h`;
   return `${h}h ${m}m`;
-}
+};
 
-export default function MatterListPage() {
+const MatterListPage = () => {
   const { token, logout } = useAuth();
   const navigate = useNavigate();
 
-  function handleLogout() {
+  const handleLogout = () => {
     logout();
     navigate('/login', { replace: true });
-  }
+  };
 
   const [matters, setMatters] = useState<Matter[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function load() {
+    const load = async () => {
       try {
         setMatters(await fetchMatters(token!));
       } catch (err) {
@@ -55,7 +55,7 @@ export default function MatterListPage() {
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     void load();
   }, [token, logout, navigate]);
@@ -131,4 +131,6 @@ export default function MatterListPage() {
       </Box>
     </Box>
   );
-}
+};
+
+export default MatterListPage;

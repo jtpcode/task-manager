@@ -1,10 +1,10 @@
 import { ApiError } from './apiError';
 import type { LoginResponse } from '../types/api';
 
-export async function login(
+export const login = async (
   email: string,
   password: string,
-): Promise<LoginResponse> {
+): Promise<LoginResponse> => {
   const response = await fetch('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -16,4 +16,4 @@ export async function login(
   }
 
   return response.json() as Promise<LoginResponse>;
-}
+};

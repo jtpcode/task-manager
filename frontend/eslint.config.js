@@ -29,6 +29,8 @@ export default defineConfig([
     },
     ignores: ["build/*"],
     rules: {
+      'func-style': ['error', 'expression'],
+      'prefer-arrow-callback': 'error',
       '@stylistic/semi': 'error',
       '@typescript-eslint/no-unsafe-assignment': 'error',
       '@typescript-eslint/no-explicit-any': 'error',

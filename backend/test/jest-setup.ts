@@ -2,7 +2,7 @@ import { config } from 'dotenv';
 import { resolve } from 'path';
 import { execSync } from 'child_process';
 
-export default function globalSetup() {
+const globalSetup = () => {
   config({ path: resolve(__dirname, '../../.env') });
 
   const testDbUrl = process.env['DATABASE_URL_TEST'];
@@ -24,4 +24,6 @@ export default function globalSetup() {
       DATABASE_URL: testDbUrl,
     },
   });
-}
+};
+
+export default globalSetup;

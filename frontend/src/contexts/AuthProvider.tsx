@@ -3,7 +3,7 @@ import { AuthContext } from './AuthContext';
 
 const STORAGE_KEY = 'access_token';
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(() =>
     localStorage.getItem(STORAGE_KEY),
   );

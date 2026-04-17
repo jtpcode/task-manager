@@ -16,7 +16,7 @@ import { useAuth } from '../hooks/useAuth';
 import { login as loginUser } from '../services/auth.service';
 import { ApiError } from '../services/apiError';
 
-export default function LoginPage() {
+const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -26,7 +26,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.BaseSyntheticEvent) {
+  const handleSubmit = async (e: React.BaseSyntheticEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
@@ -44,7 +44,7 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <Box
@@ -128,4 +128,6 @@ export default function LoginPage() {
       </Paper>
     </Box>
   );
-}
+};
+
+export default LoginPage;

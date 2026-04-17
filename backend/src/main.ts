@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, UnprocessableEntityException } from '@nestjs/common';
 import { AppModule } from './app.module';
 
-async function bootstrap() {
+const bootstrap = async () => {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(
     new ValidationPipe({
@@ -11,7 +11,8 @@ async function bootstrap() {
     }),
   );
   await app.listen(process.env.PORT ?? 3000);
-}
+};
+
 bootstrap().catch((error) => {
   console.error('Error starting the application:', error);
   process.exit(1);
