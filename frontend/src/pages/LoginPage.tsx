@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -12,10 +13,8 @@ import Typography from '@mui/material/Typography';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useAuth } from '../hooks/useAuth';
-
-interface LoginResponse {
-  access_token: string;
-}
+import { login as loginUser } from '../services/auth.service';
+import { ApiError } from '../services/apiError';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -27,33 +26,21 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.BaseSyntheticEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (response.status === 401 || response.status === 422) {
-        setError('Invalid email or password.');
-        return;
-      }
-
-      if (!response.ok) {
-        setError('An unexpected error occurred. Please try again.');
-        return;
-      }
-
-      const data = (await response.json()) as LoginResponse;
+      const data = await loginUser(email, password);
       login(data.access_token);
       navigate('/');
-    } catch {
-      setError('Could not reach the server. Please try again.');
+    } catch (err) {
+      if (err instanceof ApiError && (err.status === 401 || err.status === 422)) {
+        setError('Invalid email or password.');
+      } else {
+        setError('Could not reach the server. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

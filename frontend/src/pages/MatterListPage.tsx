@@ -13,6 +13,8 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { useAuth } from '../hooks/useAuth';
+import { fetchMatters } from '../services/matters.service';
+import { ApiError } from '../services/apiError';
 import type { Matter } from '../types/api';
 
 function formatMinutes(minutes: number): string {
@@ -32,32 +34,22 @@ export default function MatterListPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchMatters() {
+    async function load() {
       try {
-        const response = await fetch('/api/matters', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (response.status === 401) {
+        setMatters(await fetchMatters(token!));
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
           logout();
           navigate('/login', { replace: true });
-          return;
+        } else {
+          setError('Could not reach the server. Please try again.');
         }
-
-        if (!response.ok) {
-          setError('Failed to load matters. Please try again.');
-          return;
-        }
-
-        setMatters(await response.json() as Matter[]);
-      } catch {
-        setError('Could not reach the server. Please try again.');
       } finally {
         setLoading(false);
       }
     }
 
-    void fetchMatters();
+    void load();
   }, [token, logout, navigate]);
 
   if (loading) {
