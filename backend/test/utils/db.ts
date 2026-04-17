@@ -8,4 +8,4 @@ export const clearDatabase = async (prisma: PrismaService): Promise<void> => {
   await prisma.timeEntry.deleteMany();
   await prisma.matter.deleteMany();
   await prisma.user.deleteMany();
-}
+};

@@ -20,6 +20,6 @@ const App = () => {
       </Routes>
     </ThemeProvider>
   );
-}
+};
 
 export default App;
