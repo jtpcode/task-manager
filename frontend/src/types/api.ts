@@ -1,3 +1,7 @@
+export interface SummaryResponse {
+  summary: string;
+}
+
 export interface LoginResponse {
   access_token: string;
 }
