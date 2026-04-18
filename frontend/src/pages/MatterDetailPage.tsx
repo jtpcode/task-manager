@@ -17,6 +17,7 @@ import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import TimeEntryRow from '../components/TimeEntryRow';
 import { useAuth } from '../hooks/useAuth';
 import { fetchTimeEntries, createTimeEntry, fetchSummary } from '../services/matters.service';
 import { ApiError } from '../services/apiError';
@@ -25,21 +26,6 @@ import type { Matter, TimeEntry } from '../types/api';
 interface LocationState {
   matter?: Matter;
 }
-
-const formatMinutes = (minutes: number): string => {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h === 0) return `${m}m`;
-  if (m === 0) return `${h}h`;
-  return `${h}h ${m}m`;
-};
-
-const formatDate = (dateStr: string): string =>
-  new Date(dateStr).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
 
 const MatterDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -255,11 +241,7 @@ const MatterDetailPage = () => {
               </TableHead>
               <TableBody>
                 {entries.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell>{formatDate(entry.date)}</TableCell>
-                    <TableCell>{entry.description}</TableCell>
-                    <TableCell align="right">{formatMinutes(entry.minutes)}</TableCell>
-                  </TableRow>
+                  <TimeEntryRow key={entry.id} entry={entry} />
                 ))}
               </TableBody>
             </Table>

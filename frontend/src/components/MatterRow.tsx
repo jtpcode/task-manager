@@ -3,14 +3,7 @@ import Chip from '@mui/material/Chip';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import type { Matter } from '../types/api';
-
-const formatMinutes = (minutes: number): string => {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h === 0) return `${m}m`;
-  if (m === 0) return `${h}h`;
-  return `${h}h ${m}m`;
-};
+import { formatMinutes } from '../utils/formatters';
 
 interface MatterRowProps {
   matter: Matter;
