@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci
 
 # Copy root-level config files needed by Vite at runtime
 COPY index.html vite.config.ts tsconfig*.json ./

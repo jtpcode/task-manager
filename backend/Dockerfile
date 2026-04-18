@@ -4,11 +4,10 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
-
-# Copy Prisma schema and generate the Prisma Client
+# Must be present before 'npm ci' so the postinstall script (prisma generate) can run
 COPY prisma ./prisma/
-RUN npx prisma generate
+
+RUN npm ci
 
 # Copy the rest of the application code
 COPY . .
