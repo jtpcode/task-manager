@@ -17,9 +17,10 @@ import TableRow from '@mui/material/TableRow';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import AddTimeEntryForm from '../components/AddTimeEntryForm';
+import AiSummary from '../components/AiSummary';
 import TimeEntryRow from '../components/TimeEntryRow';
 import { useAuth } from '../hooks/useAuth';
-import { fetchTimeEntries, fetchSummary } from '../services/matters.service';
+import { fetchTimeEntries } from '../services/matters.service';
 import { ApiError } from '../services/apiError';
 import type { Matter, TimeEntry } from '../types/api';
 
@@ -37,10 +38,6 @@ const MatterDetailPage = () => {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [summary, setSummary] = useState<string | null>(null);
-  const [summaryLoading, setSummaryLoading] = useState(false);
-  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   const matterId = Number(id);
 
@@ -68,27 +65,6 @@ const MatterDetailPage = () => {
   const handleLogout = () => {
     logout();
     navigate('/login', { replace: true });
-  };
-
-  const handleFetchSummary = async () => {
-    setSummaryError(null);
-    setSummaryLoading(true);
-    try {
-      const { summary: fetchedSummary } = await fetchSummary(token!, matterId);
-      setSummary(fetchedSummary);
-    } catch (err: unknown) {
-      if (err instanceof ApiError && err.status === 400) {
-        setSummaryError('No time entries logged yet — add some entries first.');
-      } else if (err instanceof ApiError && err.status === 429) {
-        setSummaryError('Rate limit exceeded. Please wait a moment and try again.');
-      } else if (err instanceof ApiError && err.status === 503) {
-        setSummaryError('AI summary is not available (API key not configured).');
-      } else {
-        setSummaryError('Failed to generate summary. Please try again.');
-      }
-    } finally {
-      setSummaryLoading(false);
-    }
   };
 
   return (
@@ -176,26 +152,7 @@ const MatterDetailPage = () => {
 
         <Divider sx={{ my: 3 }} />
 
-        <Box sx={{ mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-            <Typography variant="h6">AI Summary</Typography>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => { void handleFetchSummary(); }}
-              disabled={summaryLoading}
-              startIcon={summaryLoading ? <CircularProgress size={14} color="inherit" /> : null}
-            >
-              {summaryLoading ? 'Generating...' : summary ? 'Regenerate' : 'Get AI Summary'}
-            </Button>
-          </Box>
-          {summaryError && <Alert severity="error" sx={{ mb: 2 }}>{summaryError}</Alert>}
-          {summary && (
-            <Paper sx={{ p: 3 }}>
-              <Typography>{summary}</Typography>
-            </Paper>
-          )}
-        </Box>
+        <AiSummary matterId={matterId} token={token!} />
       </Box>
     </Box>
   );
