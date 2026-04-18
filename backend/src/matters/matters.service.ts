@@ -143,19 +143,31 @@ export class MattersService {
       );
     }
 
+    const totalMinutes = matter.timeEntries.reduce(
+      (sum, entry) => sum + entry.minutes,
+      0,
+    );
+    const totalHours = (totalMinutes / 60).toFixed(1);
+
     const entriesText = matter.timeEntries
       .map(
         (entry) =>
-          `- ${entry.date.toISOString().slice(0, 10)}: ${entry.description} (${entry.minutes} minutes)`,
+          `- ${entry.date.toISOString().slice(0, 10)}: ${entry.description} (${entry.minutes} min)`,
       )
       .join('\n');
 
     const prompt =
-      `You are a legal work summarizer. Summarize the work logged for the following legal matter in 2–4 concise, readable sentences suitable for a client update.\n\n` +
+      `You are a legal assistant writing a plain-English activity summary on the time-entries related to a legal matter.\n` +
+      `Your summary must:\n` +
+      `  1. Open with a one-sentence overview of the main work performed.\n` +
+      `  2. Highlight any key milestones, filings, calls, or decisions (2–3 sentences).\n` +
+      `  3. Close with a brief note on the current status of the matter.\n` +
+      `Keep the total length to 4–5 sentences.\n\n` +
       `Matter: ${matter.title}\n` +
       `Client: ${matter.clientName}\n` +
-      `Status: ${matter.status}\n\n` +
-      `Logged time entries:\n${entriesText}`;
+      `Status: ${matter.status}\n` +
+      `Total time logged: ${totalHours} hours (${totalMinutes} minutes)\n\n` +
+      `Time entries (most recent first):\n${entriesText}`;
 
     try {
       const ai = new GoogleGenAI({ apiKey });
