@@ -99,7 +99,13 @@ const MatterDetailPage = () => {
         minutes: Number(minutes),
         ...(date !== '' && { date }),
       });
-      setEntries((prev) => [entry, ...prev]);
+      setEntries((prev) =>
+        [...prev, entry].sort((a, b) => {
+          const dateDiff = new Date(b.date).getTime() - new Date(a.date).getTime();
+          if (dateDiff !== 0) return dateDiff;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }),
+      );
       setDescription('');
       setMinutes('');
       setDate('');

@@ -70,7 +70,7 @@ export class MattersService {
 
     const entries = await this.prisma.timeEntry.findMany({
       where: { matterId },
-      orderBy: { date: 'desc' },
+      orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
     });
 
     return entries.map((entry) => ({
