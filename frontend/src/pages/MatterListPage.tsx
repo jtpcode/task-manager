@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import MatterRow from '../components/MatterRow';
 import Alert from '@mui/material/Alert';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Collapse from '@mui/material/Collapse';
 import Paper from '@mui/material/Paper';
@@ -21,14 +21,6 @@ import { fetchMatters } from '../services/matters.service';
 import { ApiError } from '../services/apiError';
 import type { Matter } from '../types/api';
 import CreateMatterForm from '../components/CreateMatterForm';
-
-const formatMinutes = (minutes: number): string => {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h === 0) return `${m}m`;
-  if (m === 0) return `${h}h`;
-  return `${h}h ${m}m`;
-};
 
 const MatterListPage = () => {
   const { token, logout } = useAuth();
@@ -134,25 +126,7 @@ const MatterListPage = () => {
             </TableHead>
             <TableBody>
               {matters.map((matter) => (
-                <TableRow
-                  key={matter.id}
-                  hover
-                  onClick={() => navigate(`/matters/${matter.id}`, { state: { matter } })}
-                  sx={{ cursor: 'pointer' }}
-                >
-                  <TableCell>{matter.title}</TableCell>
-                  <TableCell>{matter.clientName}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={matter.status}
-                      color={matter.status === 'OPEN' ? 'success' : 'default'}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    {formatMinutes(matter.totalMinutes)}
-                  </TableCell>
-                </TableRow>
+                <MatterRow key={matter.id} matter={matter} />
               ))}
             </TableBody>
           </Table>
