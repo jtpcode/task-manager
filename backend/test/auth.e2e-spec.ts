@@ -106,7 +106,7 @@ describe('Auth (e2e)', () => {
 
   describe('Protected routes', () => {
     it('returns 401 on a protected route without a token', async () => {
-      const res = await request(app.getHttpServer()).get('/');
+      const res = await request(app.getHttpServer()).get('/matters');
 
       expect(res.status).toBe(401);
     });
@@ -119,7 +119,7 @@ describe('Auth (e2e)', () => {
       const token = (loginRes.body as { access_token: string }).access_token;
 
       const res = await request(app.getHttpServer())
-        .get('/')
+        .get('/matters')
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
