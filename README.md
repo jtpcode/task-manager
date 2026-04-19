@@ -82,18 +82,16 @@ npm test:e2e
 
 - **Google Gemini API:** The decision to use Google Gemini API was based on ease of integration and from the developers point of view it has proven to be a good all-around AI.
 
-- **Logging:** The decision to use Morgan for basic logging was based on its simplicity and ease of integration with Express (used under the hood by NestJS). More advanced logging would be usefull in the future, but for the scope of this project, Morgan provided sufficient logging.
-
-- **Testing approach:** The decision to run tests locally outside of Docker was made to simplify the testing process and avoid the overhead of running tests inside a container. In the future, it might be cleaner to run the tests directly inside the Docker environment. Also frontend testing was left out of the scope of this project and because of time constraints, but in a real-world application, it would be important to implement especially for the parts that require calculations in the frontend, like transforming minutes into hours.
+- **Testing:** The decision to run tests locally outside of Docker was made to simplify the testing process and avoid the overhead of running tests inside a container. In the future, it might be cleaner to run the tests directly inside the Docker environment. Also frontend testing was left out of the scope of this project and because of time constraints, but in a real-world application, it would be important to implement especially for the parts that require calculations in the frontend, like transforming minutes into hours.
 
 ## Future Improvements
 
-- **Matter Status Toggle**: Ability to change matter status between open and closed.
-- **State Management**: Implement for example TanStack Query for frontend state management and data fetching.
-- **Matter Management**: Add features for deleting, editing, and modifying individual legal matters.
+- **State Management**: Implement for example TanStack Query for frontend state management.
+- **Matter Management**: Add features for deleting, editing, and modifying individual legal matters like changing their status.
 - **Time Entry Management**:Add features for deleting, editing, and modifying individual time entries.
 - **User Profile**: Allow users to view and edit their own profile information.
 - **AI Enhancements**: Improve AI prompt engineering and save the generated summaries to the database.
+- **Logging and Monitoring**: Implement logging and monitoring for the application.
 - **The list goes on..**
 
 
