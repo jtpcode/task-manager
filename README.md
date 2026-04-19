@@ -54,11 +54,12 @@ Database initial migration and seeding is done automatically at Docker startup v
 ### 5. Access the Application
 
 - **Frontend (React)**: [http://localhost:5173](http://localhost:5173)
-- **Backend (NestJS API)**: [http://localhost:3000](http://localhost:3000)
 
 ### 6. Running backend E2E Tests
 
-Only backend e2e tests were implemented for this project and the tests are run locally, outside the Docker environment. To run the tests, make sure you have the test database configured and running (via `docker-compose.dev.yml`). First install the dependencies in both frontend and backend:
+Only backend e2e tests were implemented for this project and the tests are run locally, outside the Docker environment.
+
+To run the tests, make sure you are on ***development*** environment (via `docker-compose.dev.yml`). First install the dependencies in both frontend and backend:
 
 ```bash
 cd frontend
