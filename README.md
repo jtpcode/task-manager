@@ -76,15 +76,15 @@ npm test:e2e
 
 ## Architectural Decisions & Trade-offs
 
-- **TypeScript version:** 5.x version was chosen for frontend and backend, because NestJS installation already came with that version. Also, the 6.x version was released only a few weeks ago and it is not yet widely adopted, which may cause unnecessary compatibility issues with some dependencies.
+- **TypeScript version:** 5.x version was chosen for frontend and backend, because NestJS installation already came with that version. Also, the 6.x version was released only a few weeks ago and it is not yet widely adopted, which at this point may cause compatibility issues.
 
 - **Prisma Migrate:** Prisma was chosen because it was new to the developer and also the job announcement implied it might be good to know.
 
-- **Google Gemini API:** The decision to use Google Gemini API for the AI assistant was based on ease of integration and it's proven to be a good all-around AI. Still, most likely most of the other free AI APIs would have been as easy to use.
+- **Google Gemini API:** The decision to use Google Gemini API was based on ease of integration and from the developers point of view it has proven to be a good all-around AI.
 
 - **Logging:** The decision to use Morgan for basic logging was based on its simplicity and ease of integration with Express (used under the hood by NestJS). More advanced logging would be usefull in the future, but for the scope of this project, Morgan provided sufficient logging.
 
-- **Testing approach:** The decision to run tests locally outside of Docker was made to simplify the testing process and avoid the overhead of running tests inside a container. In the future, it might be cleaner to run the tests directly inside the Docker environment. Also frontend testing was left out of the scope of this project and because of time constraints, but in a real-world application, it would be important to implement.
+- **Testing approach:** The decision to run tests locally outside of Docker was made to simplify the testing process and avoid the overhead of running tests inside a container. In the future, it might be cleaner to run the tests directly inside the Docker environment. Also frontend testing was left out of the scope of this project and because of time constraints, but in a real-world application, it would be important to implement especially for the parts that require calculations in the frontend, like transforming minutes into hours.
 
 ## Future Improvements
 
