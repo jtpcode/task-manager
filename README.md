@@ -71,7 +71,7 @@ Prisma client is automatically generated for the backend via `package.json` scri
 
 ```bash
 cd backend
-npm test:e2e
+npm run test:e2e
 ```
 
 ## Architectural Decisions & Trade-offs
