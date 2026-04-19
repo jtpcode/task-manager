@@ -49,7 +49,7 @@ docker compose -f docker-compose.dev.yml up --build
 
 ### 4. Database Setup & Seeding
 
-Database initial migration and seeding is done automatically at Docker startup via `prisma.config.ts` and `seed.ts`. 
+Database initial migration and seeding is done automatically at Docker startup. 
 
 ### 5. Access the Application
 
