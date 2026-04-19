@@ -57,9 +57,7 @@ Database initial migration and seeding is done automatically at Docker startup v
 
 ### 6. Running backend E2E Tests
 
-Only backend e2e tests were implemented for this project and the tests are run locally, outside the Docker environment.
-
-To run the tests, make sure you are on ***development*** environment (via `docker-compose.dev.yml`). First install the dependencies in both frontend and backend:
+Only backend e2e tests were implemented for this project and the tests are run locally, outside the Docker environment. First install the dependencies in both frontend and backend:
 
 ```bash
 cd frontend
@@ -68,7 +66,7 @@ cd ../backend
 npm ci
 ```
 
-Prisma client is automatically generated for the backend via `package.json` script. Then run the backend e2e tests:
+Prisma client is automatically generated for the backend via `package.json` script. To run the tests, make sure you are on ***development*** environment (via `docker-compose.dev.yml`):
 
 ```bash
 cd backend
