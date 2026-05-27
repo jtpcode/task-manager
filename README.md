@@ -73,18 +73,9 @@ cd backend
 npm run test:e2e
 ```
 
-## Architectural Decisions & Trade-offs
-
-- **TypeScript version:** 5.x version was chosen for frontend and backend, because NestJS installation already came with that version. Also, the 6.x version was released only a few weeks ago and it is not yet widely adopted, which at this point may cause compatibility issues.
-
-- **Prisma Migrate:** Prisma was chosen because it was new to the developer and also the job announcement implied it might be good to know.
-
-- **Google Gemini API:** The decision to use Google Gemini API was based on ease of integration and from the developers point of view it has proven to be a good all-around AI.
-
-- **Testing:** The decision to run tests locally outside of Docker was made to simplify the testing process and avoid the overhead of running tests inside a container. In the future, it might be cleaner to run the tests directly inside the Docker environment. Also frontend testing was left out of the scope of this project and because of time constraints, but in a real-world application, it would be important to implement especially for the parts that require calculations in the frontend, like transforming minutes into hours.
-
 ## Future Improvements
 
+- **Registration**: Implement user registration and account management features.
 - **State Management**: Implement for example TanStack Query for frontend state management.
 - **Task Management**: Add features for deleting, editing, and modifying individual tasks like changing their status.
 - **Task Entry Management**: Add features for deleting, editing, and modifying individual task entries.
