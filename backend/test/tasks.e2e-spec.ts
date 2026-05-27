@@ -10,23 +10,23 @@ import * as bcrypt from 'bcrypt';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 import {
-  MatterResponse,
-  TimeEntryResponse,
-} from '../src/matters/interfaces/matter-response.interface';
+  TaskResponse,
+  TaskEntryResponse,
+} from '../src/tasks/interfaces/task-response.interface';
 import { clearDatabase } from './utils/db';
 
-const TEST_USER_EMAIL = 'test-matters@example.com';
+const TEST_USER_EMAIL = 'test-tasks@example.com';
 const TEST_USER_PASSWORD = 'password123';
-const OTHER_USER_EMAIL = 'test-matters-other@example.com';
+const OTHER_USER_EMAIL = 'test-tasks-other@example.com';
 const OTHER_USER_PASSWORD = 'password456';
 
-describe('Matters (e2e)', () => {
+describe('Tasks (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
   let authToken: string;
-  let alphaMatterId: number;
-  let betaMatterId: number;
-  let otherMatterId: number;
+  let alphaTaskId: number;
+  let betaTaskId: number;
+  let otherTaskId: number;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -46,18 +46,17 @@ describe('Matters (e2e)', () => {
 
     await clearDatabase(prisma);
 
-    // Create primary test user with 2 matters
+    // Create primary test user with 2 tasks
     const user = await prisma.user.create({
       data: {
         email: TEST_USER_EMAIL,
         password: await bcrypt.hash(TEST_USER_PASSWORD, 10),
-        matters: {
+        tasks: {
           create: [
             {
-              title: 'Test Matter Alpha',
-              clientName: 'Client Alpha',
+              title: 'Test Task Alpha',
               status: 'OPEN',
-              timeEntries: {
+              taskEntries: {
                 create: [
                   { description: 'Research', minutes: 60 },
                   { description: 'Drafting', minutes: 90 },
@@ -65,10 +64,9 @@ describe('Matters (e2e)', () => {
               },
             },
             {
-              title: 'Test Matter Beta',
-              clientName: 'Client Beta',
+              title: 'Test Task Beta',
               status: 'CLOSED',
-              timeEntries: {
+              taskEntries: {
                 create: [{ description: 'Consultation', minutes: 30 }],
               },
             },
@@ -77,16 +75,15 @@ describe('Matters (e2e)', () => {
       },
     });
 
-    // Create a second user with their own matter (should not appear in primary user's results)
+    // Create a second user with their own task (should not appear in primary user's results)
     await prisma.user.create({
       data: {
         email: OTHER_USER_EMAIL,
         password: await bcrypt.hash(OTHER_USER_PASSWORD, 10),
-        matters: {
+        tasks: {
           create: [
             {
-              title: 'Other User Matter',
-              clientName: 'Other Client',
+              title: 'Other User Task',
               status: 'OPEN',
             },
           ],
@@ -101,20 +98,20 @@ describe('Matters (e2e)', () => {
 
     authToken = (loginRes.body as { access_token: string }).access_token;
 
-    const alphaM = await prisma.matter.findFirstOrThrow({
-      where: { title: 'Test Matter Alpha', userId: user.id },
+    const alphaT = await prisma.task.findFirstOrThrow({
+      where: { title: 'Test Task Alpha', userId: user.id },
     });
-    alphaMatterId = alphaM.id;
+    alphaTaskId = alphaT.id;
 
-    const betaM = await prisma.matter.findFirstOrThrow({
-      where: { title: 'Test Matter Beta', userId: user.id },
+    const betaT = await prisma.task.findFirstOrThrow({
+      where: { title: 'Test Task Beta', userId: user.id },
     });
-    betaMatterId = betaM.id;
+    betaTaskId = betaT.id;
 
-    const otherM = await prisma.matter.findFirstOrThrow({
-      where: { title: 'Other User Matter' },
+    const otherT = await prisma.task.findFirstOrThrow({
+      where: { title: 'Other User Task' },
     });
-    otherMatterId = otherM.id;
+    otherTaskId = otherT.id;
 
     expect(user).toBeDefined();
   });
@@ -125,59 +122,58 @@ describe('Matters (e2e)', () => {
     await prisma.$disconnect();
   });
 
-  describe('GET /matters', () => {
+  describe('GET /tasks', () => {
     it('returns 401 when no token is provided', async () => {
-      const res = await request(app.getHttpServer()).get('/matters');
+      const res = await request(app.getHttpServer()).get('/tasks');
       expect(res.status).toBe(401);
     });
 
     it('returns 401 when an invalid token is provided', async () => {
       const res = await request(app.getHttpServer())
-        .get('/matters')
+        .get('/tasks')
         .set('Authorization', 'Bearer invalidtoken');
       expect(res.status).toBe(401);
     });
 
-    it('returns 200 with an array of matters for the authenticated user', async () => {
+    it('returns 200 with an array of tasks for the authenticated user', async () => {
       const res = await request(app.getHttpServer())
-        .get('/matters')
+        .get('/tasks')
         .set('Authorization', `Bearer ${authToken}`);
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
 
-      const matters = res.body as MatterResponse[];
-      expect(matters).toHaveLength(2);
+      const tasks = res.body as TaskResponse[];
+      expect(tasks).toHaveLength(2);
     });
 
-    it('returns matters with the correct fields', async () => {
+    it('returns tasks with the correct fields', async () => {
       const res = await request(app.getHttpServer())
-        .get('/matters')
+        .get('/tasks')
         .set('Authorization', `Bearer ${authToken}`);
 
-      const matters = res.body as MatterResponse[];
-      for (const matter of matters) {
-        expect(matter).toHaveProperty('id');
-        expect(matter).toHaveProperty('title');
-        expect(matter).toHaveProperty('clientName');
-        expect(matter).toHaveProperty('status');
-        expect(matter).toHaveProperty('totalMinutes');
-        expect(matter).toHaveProperty('createdAt');
-        expect(matter).toHaveProperty('updatedAt');
-        expect(['OPEN', 'CLOSED']).toContain(matter.status);
-        expect(typeof matter.totalMinutes).toBe('number');
+      const tasks = res.body as TaskResponse[];
+      for (const task of tasks) {
+        expect(task).toHaveProperty('id');
+        expect(task).toHaveProperty('title');
+        expect(task).toHaveProperty('status');
+        expect(task).toHaveProperty('totalMinutes');
+        expect(task).toHaveProperty('createdAt');
+        expect(task).toHaveProperty('updatedAt');
+        expect(['OPEN', 'CLOSED']).toContain(task.status);
+        expect(typeof task.totalMinutes).toBe('number');
       }
     });
 
-    it('computes totalMinutes correctly from time entries', async () => {
+    it('computes totalMinutes correctly from task entries', async () => {
       const res = await request(app.getHttpServer())
-        .get('/matters')
+        .get('/tasks')
         .set('Authorization', `Bearer ${authToken}`);
 
-      const matters = res.body as MatterResponse[];
+      const tasks = res.body as TaskResponse[];
       // Ordered by createdAt desc — Beta was created second, so it comes first
-      const beta = matters.find((m) => m.title === 'Test Matter Beta');
-      const alpha = matters.find((m) => m.title === 'Test Matter Alpha');
+      const beta = tasks.find((t) => t.title === 'Test Task Beta');
+      const alpha = tasks.find((t) => t.title === 'Test Task Alpha');
 
       expect(beta).toBeDefined();
       expect(alpha).toBeDefined();
@@ -185,220 +181,210 @@ describe('Matters (e2e)', () => {
       expect(alpha!.totalMinutes).toBe(150); // 60 + 90
     });
 
-    it('does not return matters belonging to other users', async () => {
+    it('does not return tasks belonging to other users', async () => {
       const res = await request(app.getHttpServer())
-        .get('/matters')
+        .get('/tasks')
         .set('Authorization', `Bearer ${authToken}`);
 
-      const matters = res.body as MatterResponse[];
-      const titles = matters.map((m) => m.title);
-      expect(titles).not.toContain('Other User Matter');
+      const tasks = res.body as TaskResponse[];
+      const titles = tasks.map((t) => t.title);
+      expect(titles).not.toContain('Other User Task');
     });
   });
 
-  describe('POST /matters', () => {
+  describe('POST /tasks', () => {
     it('returns 401 when no token is provided', async () => {
       const res = await request(app.getHttpServer())
-        .post('/matters')
-        .send({ title: 'New Matter', clientName: 'New Client' });
+        .post('/tasks')
+        .send({ title: 'New Task' });
       expect(res.status).toBe(401);
     });
 
     it('returns 401 when an invalid token is provided', async () => {
       const res = await request(app.getHttpServer())
-        .post('/matters')
+        .post('/tasks')
         .set('Authorization', 'Bearer invalidtoken')
-        .send({ title: 'New Matter', clientName: 'New Client' });
+        .send({ title: 'New Task' });
       expect(res.status).toBe(401);
     });
 
     it('returns 422 when title is missing', async () => {
       const res = await request(app.getHttpServer())
-        .post('/matters')
+        .post('/tasks')
         .set('Authorization', `Bearer ${authToken}`)
-        .send({ clientName: 'New Client' });
-      expect(res.status).toBe(422);
-    });
-
-    it('returns 422 when clientName is missing', async () => {
-      const res = await request(app.getHttpServer())
-        .post('/matters')
-        .set('Authorization', `Bearer ${authToken}`)
-        .send({ title: 'New Matter' });
+        .send({});
       expect(res.status).toBe(422);
     });
 
     it('returns 422 when title is empty', async () => {
       const res = await request(app.getHttpServer())
-        .post('/matters')
+        .post('/tasks')
         .set('Authorization', `Bearer ${authToken}`)
-        .send({ title: '', clientName: 'New Client' });
+        .send({ title: '' });
       expect(res.status).toBe(422);
     });
 
-    it('creates a matter with default OPEN status and returns 201', async () => {
+    it('creates a task with default OPEN status and returns 201', async () => {
       const res = await request(app.getHttpServer())
-        .post('/matters')
+        .post('/tasks')
         .set('Authorization', `Bearer ${authToken}`)
-        .send({ title: 'Created Matter', clientName: 'Created Client' });
+        .send({ title: 'Created Task' });
 
       expect(res.status).toBe(201);
 
-      const matter = res.body as MatterResponse;
-      expect(matter.title).toBe('Created Matter');
-      expect(matter.clientName).toBe('Created Client');
-      expect(matter.status).toBe('OPEN');
-      expect(matter.totalMinutes).toBe(0);
-      expect(matter).toHaveProperty('id');
-      expect(matter).toHaveProperty('createdAt');
-      expect(matter).toHaveProperty('updatedAt');
+      const task = res.body as TaskResponse;
+      expect(task.title).toBe('Created Task');
+      expect(task.status).toBe('OPEN');
+      expect(task.totalMinutes).toBe(0);
+      expect(task).toHaveProperty('id');
+      expect(task).toHaveProperty('createdAt');
+      expect(task).toHaveProperty('updatedAt');
     });
 
-    it('creates a matter with explicit CLOSED status', async () => {
+    it('creates a task with explicit CLOSED status', async () => {
       const res = await request(app.getHttpServer())
-        .post('/matters')
+        .post('/tasks')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
-          title: 'Closed Matter',
-          clientName: 'Closed Client',
+          title: 'Closed Task',
           status: 'CLOSED',
         });
 
       expect(res.status).toBe(201);
-      expect((res.body as MatterResponse).status).toBe('CLOSED');
+      expect((res.body as TaskResponse).status).toBe('CLOSED');
     });
 
-    it('does not create matters for other users', async () => {
+    it('does not create tasks for other users', async () => {
       await request(app.getHttpServer())
-        .post('/matters')
+        .post('/tasks')
         .set('Authorization', `Bearer ${authToken}`)
-        .send({ title: 'Isolated Matter', clientName: 'Isolated Client' });
+        .send({ title: 'Isolated Task' });
 
       // Verify it appears in the creating user's list
       const listRes = await request(app.getHttpServer())
-        .get('/matters')
+        .get('/tasks')
         .set('Authorization', `Bearer ${authToken}`);
 
-      const titles = (listRes.body as MatterResponse[]).map((m) => m.title);
-      expect(titles).toContain('Isolated Matter');
+      const titles = (listRes.body as TaskResponse[]).map((t) => t.title);
+      expect(titles).toContain('Isolated Task');
     });
   });
 
-  describe('GET /matters/:id/time-entries', () => {
+  describe('GET /tasks/:id/task-entries', () => {
     it('returns 401 when no token is provided', async () => {
       const res = await request(app.getHttpServer()).get(
-        `/matters/${alphaMatterId}/time-entries`,
+        `/tasks/${alphaTaskId}/task-entries`,
       );
       expect(res.status).toBe(401);
     });
 
     it('returns 401 when an invalid token is provided', async () => {
       const res = await request(app.getHttpServer())
-        .get(`/matters/${alphaMatterId}/time-entries`)
+        .get(`/tasks/${alphaTaskId}/task-entries`)
         .set('Authorization', 'Bearer invalidtoken');
       expect(res.status).toBe(401);
     });
 
-    it('returns 404 for a non-existent matter id', async () => {
+    it('returns 404 for a non-existent task id', async () => {
       const res = await request(app.getHttpServer())
-        .get('/matters/999999/time-entries')
+        .get('/tasks/999999/task-entries')
         .set('Authorization', `Bearer ${authToken}`);
       expect(res.status).toBe(404);
     });
 
-    it('returns 404 for a matter belonging to another user', async () => {
+    it('returns 404 for a task belonging to another user', async () => {
       const res = await request(app.getHttpServer())
-        .get(`/matters/${otherMatterId}/time-entries`)
+        .get(`/tasks/${otherTaskId}/task-entries`)
         .set('Authorization', `Bearer ${authToken}`);
       expect(res.status).toBe(404);
     });
 
-    it('returns 200 with an array of time entries', async () => {
+    it('returns 200 with an array of task entries', async () => {
       const res = await request(app.getHttpServer())
-        .get(`/matters/${alphaMatterId}/time-entries`)
+        .get(`/tasks/${alphaTaskId}/task-entries`)
         .set('Authorization', `Bearer ${authToken}`);
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
     });
 
-    it('returns the correct number of entries for each matter', async () => {
+    it('returns the correct number of entries for each task', async () => {
       const alphaRes = await request(app.getHttpServer())
-        .get(`/matters/${alphaMatterId}/time-entries`)
+        .get(`/tasks/${alphaTaskId}/task-entries`)
         .set('Authorization', `Bearer ${authToken}`);
-      expect((alphaRes.body as TimeEntryResponse[]).length).toBe(2);
+      expect((alphaRes.body as TaskEntryResponse[]).length).toBe(2);
 
       const betaRes = await request(app.getHttpServer())
-        .get(`/matters/${betaMatterId}/time-entries`)
+        .get(`/tasks/${betaTaskId}/task-entries`)
         .set('Authorization', `Bearer ${authToken}`);
-      expect((betaRes.body as TimeEntryResponse[]).length).toBe(1);
+      expect((betaRes.body as TaskEntryResponse[]).length).toBe(1);
     });
 
-    it('returns time entries with the correct fields', async () => {
+    it('returns task entries with the correct fields', async () => {
       const res = await request(app.getHttpServer())
-        .get(`/matters/${alphaMatterId}/time-entries`)
+        .get(`/tasks/${alphaTaskId}/task-entries`)
         .set('Authorization', `Bearer ${authToken}`);
 
-      const entries = res.body as TimeEntryResponse[];
+      const entries = res.body as TaskEntryResponse[];
       for (const entry of entries) {
         expect(entry).toHaveProperty('id');
         expect(entry).toHaveProperty('description');
         expect(entry).toHaveProperty('date');
         expect(entry).toHaveProperty('minutes');
-        expect(entry).toHaveProperty('matterId');
+        expect(entry).toHaveProperty('taskId');
         expect(entry).toHaveProperty('createdAt');
         expect(entry).toHaveProperty('updatedAt');
         expect(typeof entry.minutes).toBe('number');
-        expect(entry.matterId).toBe(alphaMatterId);
+        expect(entry.taskId).toBe(alphaTaskId);
       }
     });
 
-    it('returns correct minutes values for Alpha matter entries', async () => {
+    it('returns correct minutes values for Alpha task entries', async () => {
       const res = await request(app.getHttpServer())
-        .get(`/matters/${alphaMatterId}/time-entries`)
+        .get(`/tasks/${alphaTaskId}/task-entries`)
         .set('Authorization', `Bearer ${authToken}`);
 
-      const entries = res.body as TimeEntryResponse[];
+      const entries = res.body as TaskEntryResponse[];
       const minuteValues = entries.map((e) => e.minutes).sort((a, b) => a - b);
       expect(minuteValues).toEqual([60, 90]);
     });
 
-    it('returns correct minutes value for Beta matter entry', async () => {
+    it('returns correct minutes value for Beta task entry', async () => {
       const res = await request(app.getHttpServer())
-        .get(`/matters/${betaMatterId}/time-entries`)
+        .get(`/tasks/${betaTaskId}/task-entries`)
         .set('Authorization', `Bearer ${authToken}`);
 
-      const entries = res.body as TimeEntryResponse[];
+      const entries = res.body as TaskEntryResponse[];
       expect(entries[0].minutes).toBe(30);
     });
   });
 
-  describe('POST /matters/:id/time-entries', () => {
+  describe('POST /tasks/:id/task-entries', () => {
     it('returns 401 when no token is provided', async () => {
       const res = await request(app.getHttpServer())
-        .post(`/matters/${alphaMatterId}/time-entries`)
+        .post(`/tasks/${alphaTaskId}/task-entries`)
         .send({ description: 'Work', minutes: 30 });
       expect(res.status).toBe(401);
     });
 
     it('returns 401 when an invalid token is provided', async () => {
       const res = await request(app.getHttpServer())
-        .post(`/matters/${alphaMatterId}/time-entries`)
+        .post(`/tasks/${alphaTaskId}/task-entries`)
         .set('Authorization', 'Bearer invalidtoken')
         .send({ description: 'Work', minutes: 30 });
       expect(res.status).toBe(401);
     });
 
-    it('returns 404 for a non-existent matter id', async () => {
+    it('returns 404 for a non-existent task id', async () => {
       const res = await request(app.getHttpServer())
-        .post('/matters/999999/time-entries')
+        .post('/tasks/999999/task-entries')
         .set('Authorization', `Bearer ${authToken}`)
         .send({ description: 'Work', minutes: 30 });
       expect(res.status).toBe(404);
     });
 
-    it('returns 404 for a matter belonging to another user', async () => {
+    it('returns 404 for a task belonging to another user', async () => {
       const res = await request(app.getHttpServer())
-        .post(`/matters/${otherMatterId}/time-entries`)
+        .post(`/tasks/${otherTaskId}/task-entries`)
         .set('Authorization', `Bearer ${authToken}`)
         .send({ description: 'Work', minutes: 30 });
       expect(res.status).toBe(404);
@@ -406,7 +392,7 @@ describe('Matters (e2e)', () => {
 
     it('returns 422 when description is missing', async () => {
       const res = await request(app.getHttpServer())
-        .post(`/matters/${alphaMatterId}/time-entries`)
+        .post(`/tasks/${alphaTaskId}/task-entries`)
         .set('Authorization', `Bearer ${authToken}`)
         .send({ minutes: 30 });
       expect(res.status).toBe(422);
@@ -414,7 +400,7 @@ describe('Matters (e2e)', () => {
 
     it('returns 422 when minutes is missing', async () => {
       const res = await request(app.getHttpServer())
-        .post(`/matters/${alphaMatterId}/time-entries`)
+        .post(`/tasks/${alphaTaskId}/task-entries`)
         .set('Authorization', `Bearer ${authToken}`)
         .send({ description: 'Work' });
       expect(res.status).toBe(422);
@@ -422,7 +408,7 @@ describe('Matters (e2e)', () => {
 
     it('returns 422 when minutes is 0', async () => {
       const res = await request(app.getHttpServer())
-        .post(`/matters/${alphaMatterId}/time-entries`)
+        .post(`/tasks/${alphaTaskId}/task-entries`)
         .set('Authorization', `Bearer ${authToken}`)
         .send({ description: 'Work', minutes: 0 });
       expect(res.status).toBe(422);
@@ -430,84 +416,84 @@ describe('Matters (e2e)', () => {
 
     it('returns 422 when minutes is negative', async () => {
       const res = await request(app.getHttpServer())
-        .post(`/matters/${alphaMatterId}/time-entries`)
+        .post(`/tasks/${alphaTaskId}/task-entries`)
         .set('Authorization', `Bearer ${authToken}`)
         .send({ description: 'Work', minutes: -10 });
       expect(res.status).toBe(422);
     });
 
-    it('creates a time entry with an explicit date and returns 201', async () => {
+    it('creates a task entry with an explicit date and returns 201', async () => {
       const res = await request(app.getHttpServer())
-        .post(`/matters/${betaMatterId}/time-entries`)
+        .post(`/tasks/${betaTaskId}/task-entries`)
         .set('Authorization', `Bearer ${authToken}`)
         .send({ description: 'Review', minutes: 45, date: '2026-01-15' });
 
       expect(res.status).toBe(201);
-      const entry = res.body as TimeEntryResponse;
+      const entry = res.body as TaskEntryResponse;
       expect(entry.description).toBe('Review');
       expect(entry.minutes).toBe(45);
-      expect(entry.matterId).toBe(betaMatterId);
+      expect(entry.taskId).toBe(betaTaskId);
       expect(entry).toHaveProperty('id');
       expect(entry).toHaveProperty('date');
       expect(entry).toHaveProperty('createdAt');
       expect(entry).toHaveProperty('updatedAt');
     });
 
-    it('creates a time entry without a date (defaults to now) and returns 201', async () => {
+    it('creates a task entry without a date (defaults to now) and returns 201', async () => {
       const res = await request(app.getHttpServer())
-        .post(`/matters/${betaMatterId}/time-entries`)
+        .post(`/tasks/${betaTaskId}/task-entries`)
         .set('Authorization', `Bearer ${authToken}`)
         .send({ description: 'Filing', minutes: 20 });
 
       expect(res.status).toBe(201);
-      const entry = res.body as TimeEntryResponse;
+      const entry = res.body as TaskEntryResponse;
       expect(entry.description).toBe('Filing');
       expect(entry.minutes).toBe(20);
       expect(entry).toHaveProperty('date');
     });
 
-    it('new entry appears in subsequent GET /matters/:id/time-entries', async () => {
+    it('new entry appears in subsequent GET /tasks/:id/task-entries', async () => {
       await request(app.getHttpServer())
-        .post(`/matters/${alphaMatterId}/time-entries`)
+        .post(`/tasks/${alphaTaskId}/task-entries`)
         .set('Authorization', `Bearer ${authToken}`)
         .send({ description: 'Verification entry', minutes: 15 });
 
       const listRes = await request(app.getHttpServer())
-        .get(`/matters/${alphaMatterId}/time-entries`)
+        .get(`/tasks/${alphaTaskId}/task-entries`)
         .set('Authorization', `Bearer ${authToken}`);
 
-      const entries = listRes.body as TimeEntryResponse[];
+      const entries = listRes.body as TaskEntryResponse[];
       expect(entries.some((e) => e.description === 'Verification entry')).toBe(
         true,
       );
     });
   });
 
-  describe('GET /matters/:id/summary', () => {
+  describe('GET /tasks/:id/summary', () => {
     it('returns 401 when no token is provided', async () => {
       const res = await request(app.getHttpServer()).get(
-        `/matters/${alphaMatterId}/summary`,
+        `/tasks/${alphaTaskId}/summary`,
       );
       expect(res.status).toBe(401);
     });
 
     it('returns 401 when an invalid token is provided', async () => {
       const res = await request(app.getHttpServer())
-        .get(`/matters/${alphaMatterId}/summary`)
+        .get(`/tasks/${alphaTaskId}/summary`)
         .set('Authorization', 'Bearer invalidtoken');
       expect(res.status).toBe(401);
     });
 
-    it('returns 404 for a non-existent matter id', async () => {
+    it('returns 404 for a non-existent task id', async () => {
       const res = await request(app.getHttpServer())
-        .get('/matters/999999/summary')
+        .get('/tasks/999999/summary')
         .set('Authorization', `Bearer ${authToken}`);
       expect(res.status).toBe(404);
     });
 
-    it('returns 404 for a matter belonging to another user', async () => {
+    it('returns 404 for a task belonging to another user', async () => {
       const res = await request(app.getHttpServer())
-        .get(`/matters/${otherMatterId}/summary`)
+        .get(`/tasks/${otherTaskId}/summary`)
         .set('Authorization', `Bearer ${authToken}`);
       expect(res.status).toBe(404);
     });
@@ -517,22 +503,22 @@ describe('Matters (e2e)', () => {
       delete process.env['GOOGLE_AI_API_KEY'];
 
       const res = await request(app.getHttpServer())
-        .get(`/matters/${alphaMatterId}/summary`)
+        .get(`/tasks/${alphaTaskId}/summary`)
         .set('Authorization', `Bearer ${authToken}`);
 
       process.env['GOOGLE_AI_API_KEY'] = original;
       expect(res.status).toBe(503);
     });
 
-    it('returns 400 when the matter has no time entries', async () => {
+    it('returns 400 when the task has no task entries', async () => {
       const createRes = await request(app.getHttpServer())
-        .post('/matters')
+        .post('/tasks')
         .set('Authorization', `Bearer ${authToken}`)
-        .send({ title: 'Empty Matter', clientName: 'Empty Client' });
-      const emptyMatterId = (createRes.body as MatterResponse).id;
+        .send({ title: 'Empty Task' });
+      const emptyTaskId = (createRes.body as TaskResponse).id;
 
       const res = await request(app.getHttpServer())
-        .get(`/matters/${emptyMatterId}/summary`)
+        .get(`/tasks/${emptyTaskId}/summary`)
         .set('Authorization', `Bearer ${authToken}`);
       expect(res.status).toBe(400);
     });
