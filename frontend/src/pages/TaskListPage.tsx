@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import MatterRow from '../components/MatterRow';
+import TaskRow from '../components/TaskRow';
 import Alert from '@mui/material/Alert';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -17,12 +17,12 @@ import TableRow from '@mui/material/TableRow';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { useAuth } from '../hooks/useAuth';
-import { fetchMatters } from '../services/matters.service';
+import { fetchTasks } from '../services/tasks.service';
 import { ApiError } from '../services/apiError';
-import type { Matter } from '../types/api';
-import CreateMatterForm from '../components/CreateMatterForm';
+import type { Task } from '../types/api';
+import CreateTaskForm from '../components/CreateTaskForm';
 
-const MatterListPage = () => {
+const TaskListPage = () => {
   const { token, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -31,7 +31,7 @@ const MatterListPage = () => {
     navigate('/login', { replace: true });
   };
 
-  const [matters, setMatters] = useState<Matter[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -39,7 +39,7 @@ const MatterListPage = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        setMatters(await fetchMatters(token!));
+        setTasks(await fetchTasks(token!));
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
           logout();
@@ -76,7 +76,7 @@ const MatterListPage = () => {
       <AppBar position="static" elevation={1}>
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Legal Matter Tracker
+            Task Manager
           </Typography>
           <Button color="inherit" onClick={handleLogout}>
             Logout
@@ -87,24 +87,24 @@ const MatterListPage = () => {
       <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4, px: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
         <Typography variant="h5" sx={{ fontWeight: 'bold', flexGrow: 1 }}>
-          Matters
+          Tasks
         </Typography>
         <Button
           variant={showForm ? 'outlined' : 'contained'}
           onClick={() => setShowForm((prev) => !prev)}
         >
-          {showForm ? 'Cancel' : 'New Matter'}
+          {showForm ? 'Cancel' : 'New Task'}
         </Button>
       </Box>
 
       <Collapse in={showForm}>
         <Paper sx={{ p: 3, mb: 3 }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 'medium', mb: 2 }}>
-            New Matter
+            New Task
           </Typography>
-          <CreateMatterForm
-            onSuccess={(matter) => {
-              setMatters((prev) => [matter, ...prev]);
+          <CreateTaskForm
+            onSuccess={(task) => {
+              setTasks((prev) => [task, ...prev]);
               setShowForm(false);
             }}
           />
@@ -112,21 +112,20 @@ const MatterListPage = () => {
       </Collapse>
 
       {matters.length === 0 ? (
-        <Typography color="text.secondary">No matters found.</Typography>
+        <Typography color="text.secondary">No tasks found.</Typography>
       ) : (
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
                 <TableCell>Title</TableCell>
-                <TableCell>Client</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell align="right">Total Time</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {matters.map((matter) => (
-                <MatterRow key={matter.id} matter={matter} />
+              {tasks.map((task) => (
+                <TaskRow key={task.id} task={task} />
               ))}
             </TableBody>
           </Table>
@@ -137,4 +136,4 @@ const MatterListPage = () => {
   );
 };
 
-export default MatterListPage;
+export default TaskListPage;

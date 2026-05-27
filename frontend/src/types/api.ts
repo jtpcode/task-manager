@@ -6,34 +6,32 @@ export interface LoginResponse {
   access_token: string;
 }
 
-export interface CreateMatterRequest {
+export interface CreateTaskRequest {
   title: string;
-  clientName: string;
   status?: 'OPEN' | 'CLOSED';
 }
 
-export interface CreateTimeEntryRequest {
+export interface CreateTaskEntryRequest {
   description: string;
   minutes: number;
   date?: string;
 }
 
-export interface Matter {
+export interface Task {
   id: number;
   title: string;
-  clientName: string;
   status: 'OPEN' | 'CLOSED';
   totalMinutes: number;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface TimeEntry {
+export interface TaskEntry {
   id: number;
   description: string;
   date: string;
   minutes: number;
-  matterId: number;
+  taskId: number;
   createdAt: string;
   updatedAt: string;
 }

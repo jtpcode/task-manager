@@ -20,39 +20,39 @@ import AddTimeEntryForm from '../components/AddTimeEntryForm';
 import AiSummary from '../components/AiSummary';
 import TimeEntryRow from '../components/TimeEntryRow';
 import { useAuth } from '../hooks/useAuth';
-import { fetchTimeEntries } from '../services/matters.service';
+import { fetchTaskEntries } from '../services/tasks.service';
 import { ApiError } from '../services/apiError';
-import type { Matter, TimeEntry } from '../types/api';
+import type { Task, TaskEntry } from '../types/api';
 
 interface LocationState {
-  matter?: Matter;
+  task?: Task;
 }
 
-const MatterDetailPage = () => {
+const TaskDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const { token, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const matter = (location.state as LocationState | null)?.matter ?? null;
+  const task = (location.state as LocationState | null)?.task ?? null;
 
-  const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [entries, setEntries] = useState<TaskEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const matterId = Number(id);
+  const taskId = Number(id);
 
   useEffect(() => {
     const load = async () => {
       try {
-        setEntries(await fetchTimeEntries(token!, matterId));
+        setEntries(await fetchTaskEntries(token!, taskId));
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
           logout();
           navigate('/login', { replace: true });
         } else if (err instanceof ApiError && err.status === 404) {
-          setError('Matter not found.');
+          setError('Task not found.');
         } else {
-          setError('Could not load time entries. Please try again.');
+          setError('Could not load task entries. Please try again.');
         }
       } finally {
         setLoading(false);
@@ -60,7 +60,7 @@ const MatterDetailPage = () => {
     };
 
     void load();
-  }, [token, matterId, logout, navigate]);
+  }, [token, taskId, logout, navigate]);
 
   const handleLogout = () => {
     logout();
@@ -72,7 +72,7 @@ const MatterDetailPage = () => {
       <AppBar position="static" elevation={1}>
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Legal Matter Tracker
+            Task Manager
           </Typography>
           <Button color="inherit" onClick={handleLogout}>
             Logout
@@ -83,32 +83,31 @@ const MatterDetailPage = () => {
       <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4, px: 2 }}>
         <Box sx={{ mb: 3 }}>
           <Button onClick={() => navigate('/')} size="small">
-            ← Back to Matters
+            ← Back to Tasks
           </Button>
         </Box>
 
-        {matter && (
+        {task && (
           <Box sx={{ mb: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 0.5 }}>
               <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                {matter.title}
+                {task.title}
               </Typography>
               <Chip
-                label={matter.status}
-                color={matter.status === 'OPEN' ? 'success' : 'default'}
+                label={task.status}
+                color={task.status === 'OPEN' ? 'success' : 'default'}
                 size="small"
               />
             </Box>
-            <Typography color="text.secondary">{matter.clientName}</Typography>
           </Box>
         )}
 
         <Typography variant="h6" sx={{ mb: 2 }}>
-          Time Entries
+          Task Entries
         </Typography>
 
         <AddTimeEntryForm
-          matterId={matterId}
+          taskId={taskId}
           token={token!}
           onSuccess={(entry) =>
             setEntries((prev) =>
@@ -130,7 +129,7 @@ const MatterDetailPage = () => {
         ) : error ? (
           <Alert severity="error">{error}</Alert>
         ) : entries.length === 0 ? (
-          <Typography color="text.secondary">No time entries logged.</Typography>
+          <Typography color="text.secondary">No task entries logged.</Typography>
         ) : (
           <TableContainer component={Paper}>
             <Table>
@@ -152,10 +151,10 @@ const MatterDetailPage = () => {
 
         <Divider sx={{ my: 3 }} />
 
-        <AiSummary matterId={matterId} token={token!} />
+        <AiSummary taskId={taskId} token={token!} />
       </Box>
     </Box>
   );
 };
 
-export default MatterDetailPage;
+export default TaskDetailPage;

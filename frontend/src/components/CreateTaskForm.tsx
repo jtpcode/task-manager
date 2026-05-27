@@ -10,19 +10,18 @@ import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import { useAuth } from '../hooks/useAuth';
-import { createMatter } from '../services/matters.service';
+import { createTask } from '../services/tasks.service';
 import { ApiError } from '../services/apiError';
-import type { Matter } from '../types/api';
+import type { Task } from '../types/api';
 
-interface CreateMatterFormProps {
-  onSuccess: (matter: Matter) => void;
+interface CreateTaskFormProps {
+  onSuccess: (task: Task) => void;
 }
 
-const CreateMatterForm = ({ onSuccess }: CreateMatterFormProps) => {
+const CreateTaskForm = ({ onSuccess }: CreateTaskFormProps) => {
   const { token } = useAuth();
 
   const [title, setTitle] = useState('');
-  const [clientName, setClientName] = useState('');
   const [status, setStatus] = useState<'OPEN' | 'CLOSED'>('OPEN');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,16 +31,15 @@ const CreateMatterForm = ({ onSuccess }: CreateMatterFormProps) => {
     setSubmitting(true);
 
     try {
-      const matter: Matter = await createMatter(token!, { title, clientName, status });
+      const task: Task = await createTask(token!, { title, status });
       setTitle('');
-      setClientName('');
       setStatus('OPEN');
-      onSuccess(matter);
+      onSuccess(task);
     } catch (err) {
       if (err instanceof ApiError && err.status === 422) {
         setError('Please fill in all required fields correctly.');
       } else {
-        setError('Failed to create matter. Please try again.');
+        setError('Failed to create task. Please try again.');
       }
     } finally {
       setSubmitting(false);
@@ -69,14 +67,6 @@ const CreateMatterForm = ({ onSuccess }: CreateMatterFormProps) => {
           size="small"
           sx={{ flex: '1 1 200px' }}
         />
-        <TextField
-          label="Client Name"
-          value={clientName}
-          onChange={(e) => setClientName(e.target.value)}
-          required
-          size="small"
-          sx={{ flex: '1 1 200px' }}
-        />
         <FormControl size="small" sx={{ flex: '0 1 140px', minWidth: 120 }}>
           <InputLabel id="status-label">Status</InputLabel>
           <Select
@@ -98,11 +88,11 @@ const CreateMatterForm = ({ onSuccess }: CreateMatterFormProps) => {
           disabled={submitting}
           startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : null}
         >
-          {submitting ? 'Creating...' : 'Create Matter'}
+          {submitting ? 'Creating...' : 'Create Task'}
         </Button>
       </Box>
     </Box>
   );
 };
 
-export default CreateMatterForm;
+export default CreateTaskForm;

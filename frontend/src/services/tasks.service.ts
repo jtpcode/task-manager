@@ -1,8 +1,8 @@
 import { ApiError } from './apiError';
-import type { Matter, CreateMatterRequest, TimeEntry, CreateTimeEntryRequest, SummaryResponse } from '../types/api';
+import type { Task, CreateTaskRequest, TaskEntry, CreateTaskEntryRequest, SummaryResponse } from '../types/api';
 
-export const fetchMatters = async (token: string): Promise<Matter[]> => {
-  const response = await fetch('/api/matters', {
+export const fetchTasks = async (token: string): Promise<Task[]> => {
+  const response = await fetch('/api/tasks', {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -10,14 +10,14 @@ export const fetchMatters = async (token: string): Promise<Matter[]> => {
     throw new ApiError(response.status);
   }
 
-  return response.json() as Promise<Matter[]>;
+  return response.json() as Promise<Task[]>;
 };
 
-export const createMatter = async (
+export const createTask = async (
   token: string,
-  data: CreateMatterRequest,
-): Promise<Matter> => {
-  const response = await fetch('/api/matters', {
+  data: CreateTaskRequest,
+): Promise<Task> => {
+  const response = await fetch('/api/tasks', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -30,14 +30,14 @@ export const createMatter = async (
     throw new ApiError(response.status);
   }
 
-  return response.json() as Promise<Matter>;
+  return response.json() as Promise<Task>;
 };
 
-export const fetchTimeEntries = async (
+export const fetchTaskEntries = async (
   token: string,
-  matterId: number,
-): Promise<TimeEntry[]> => {
-  const response = await fetch(`/api/matters/${matterId}/time-entries`, {
+  taskId: number,
+): Promise<TaskEntry[]> => {
+  const response = await fetch(`/api/tasks/${taskId}/task-entries`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -45,15 +45,15 @@ export const fetchTimeEntries = async (
     throw new ApiError(response.status);
   }
 
-  return response.json() as Promise<TimeEntry[]>;
+  return response.json() as Promise<TaskEntry[]>;
 };
 
-export const createTimeEntry = async (
+export const createTaskEntry = async (
   token: string,
-  matterId: number,
-  data: CreateTimeEntryRequest,
-): Promise<TimeEntry> => {
-  const response = await fetch(`/api/matters/${matterId}/time-entries`, {
+  taskId: number,
+  data: CreateTaskEntryRequest,
+): Promise<TaskEntry> => {
+  const response = await fetch(`/api/tasks/${taskId}/task-entries`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -66,14 +66,14 @@ export const createTimeEntry = async (
     throw new ApiError(response.status);
   }
 
-  return response.json() as Promise<TimeEntry>;
+  return response.json() as Promise<TaskEntry>;
 };
 
 export const fetchSummary = async (
   token: string,
-  matterId: number,
+  taskId: number,
 ): Promise<SummaryResponse> => {
-  const response = await fetch(`/api/matters/${matterId}/summary`, {
+  const response = await fetch(`/api/tasks/${taskId}/summary`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 

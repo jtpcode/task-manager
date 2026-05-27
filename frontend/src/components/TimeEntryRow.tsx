@@ -1,10 +1,10 @@
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
-import type { TimeEntry } from '../types/api';
+import type { TaskEntry } from '../types/api';
 import { formatMinutes, formatDate } from '../utils/formatters';
 
 interface TimeEntryRowProps {
-  entry: TimeEntry;
+  entry: TaskEntry;
 }
 
 const TimeEntryRow = ({ entry }: TimeEntryRowProps) => (

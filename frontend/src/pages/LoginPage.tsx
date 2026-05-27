@@ -62,7 +62,7 @@ const LoginPage = () => {
         sx={{ width: '100%', maxWidth: 400, p: { xs: 3, sm: 4 } }}
       >
         <Typography variant="h5" sx={{ fontWeight: 'bold' }} gutterBottom>
-          Legal Matter Tracker
+          Task Manager
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           Sign in to your account

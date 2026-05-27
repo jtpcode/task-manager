@@ -5,15 +5,15 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { fetchSummary } from '../services/matters.service';
+import { fetchSummary } from '../services/tasks.service';
 import { ApiError } from '../services/apiError';
 
 interface AiSummaryProps {
-  matterId: number;
+  taskId: number;
   token: string;
 }
 
-const AiSummary = ({ matterId, token }: AiSummaryProps) => {
+const AiSummary = ({ taskId, token }: AiSummaryProps) => {
   const [summary, setSummary] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +22,7 @@ const AiSummary = ({ matterId, token }: AiSummaryProps) => {
     setError(null);
     setLoading(true);
     try {
-      const { summary: fetched } = await fetchSummary(token, matterId);
+      const { summary: fetched } = await fetchSummary(token, taskId);
       setSummary(fetched);
     } catch (err: unknown) {
       if (err instanceof ApiError && err.status === 400) {

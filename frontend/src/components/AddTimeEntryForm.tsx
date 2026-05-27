@@ -6,17 +6,17 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { createTimeEntry } from '../services/matters.service';
+import { createTaskEntry } from '../services/tasks.service';
 import { ApiError } from '../services/apiError';
-import type { TimeEntry } from '../types/api';
+import type { TaskEntry } from '../types/api';
 
 interface AddTimeEntryFormProps {
-  matterId: number;
+  taskId: number;
   token: string;
-  onSuccess: (entry: TimeEntry) => void;
+  onSuccess: (entry: TaskEntry) => void;
 }
 
-const AddTimeEntryForm = ({ matterId, token, onSuccess }: AddTimeEntryFormProps) => {
+const AddTimeEntryForm = ({ taskId, token, onSuccess }: AddTimeEntryFormProps) => {
   const [description, setDescription] = useState('');
   const [minutes, setMinutes] = useState('');
   const [date, setDate] = useState('');
@@ -27,7 +27,7 @@ const AddTimeEntryForm = ({ matterId, token, onSuccess }: AddTimeEntryFormProps)
     setFormError(null);
     setSubmitting(true);
     try {
-      const entry = await createTimeEntry(token, matterId, {
+      const entry = await createTaskEntry(token, taskId, {
         description,
         minutes: Number(minutes),
         ...(date !== '' && { date }),
