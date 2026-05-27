@@ -1,19 +1,18 @@
-export interface MatterResponse {
+export interface TaskResponse {
   id: number;
   title: string;
-  clientName: string;
   status: 'OPEN' | 'CLOSED';
   totalMinutes: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface TimeEntryResponse {
+export interface TaskEntryResponse {
   id: number;
   description: string;
   date: Date;
   minutes: number;
-  matterId: number;
+  taskId: number;
   createdAt: Date;
   updatedAt: Date;
 }

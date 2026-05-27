@@ -7,7 +7,7 @@ import {
   Min,
 } from 'class-validator';
 
-export class CreateTimeEntryDto {
+export class CreateTaskEntryDto {
   @IsNotEmpty()
   @IsString()
   description!: string;

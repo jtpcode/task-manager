@@ -15,46 +15,45 @@ model User {
   email     String   @unique
   password  String
 
-  // A user can have many matters
-  matters   Matter[]
+  // A user can have many tasks
+  tasks     Task[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Matter {
-  id          Int         @id @default(autoincrement())
+model Task {
+  id          Int        @id @default(autoincrement())
   title       String
-  clientName  String    
-  status      MatterStatus @default(OPEN)
-  
-  // A matter is tied to a user
+  status      TaskStatus @default(OPEN)
+
+  // A task is tied to a user
   userId      Int
-  user        User        @relation(fields: [userId], references: [id])
-  
-  // A matter has many time entries
-  timeEntries TimeEntry[]
-  
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  user        User       @relation(fields: [userId], references: [id])
+
+  // A task has many task entries
+  taskEntries TaskEntry[]
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
-model TimeEntry {
+model TaskEntry {
   id          Int      @id @default(autoincrement())
   description String
-  date        DateTime @default(now()) 
-  minutes     Int    
-  
-  // A timeEntry is tied to a matter
-  matterId    Int
-  matter      Matter   @relation(fields: [matterId], references: [id])
-  
+  date        DateTime @default(now())
+  minutes     Int
+
+  // A taskEntry is tied to a task
+  taskId      Int
+  task        Task     @relation(fields: [taskId], references: [id])
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
-// Enum for the state of the matter
-enum MatterStatus {
+// Enum for the state of the task
+enum TaskStatus {
   OPEN
   CLOSED
 }

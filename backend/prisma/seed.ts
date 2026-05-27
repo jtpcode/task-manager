@@ -14,46 +14,44 @@ const main = async () => {
   // 1. Create a Seed User
   const user = await prisma.user.create({
     data: {
-      email: 'lawyer@example.com',
+      email: 'user@example.com',
       password: '$2b$10$ORYFQ4z.PVOdM26Ufd6jNOHAcfKAqAMiKZFIzY/hJ5VIfgI.WQH3m',
     },
   });
 
-  // 2. Create Matters with Time Entries
-  await prisma.matter.create({
+  // 2. Create Tasks with Task Entries
+  await prisma.task.create({
     data: {
-      title: 'Smith vs Jones Contract Review',
-      clientName: 'John Smith',
+      title: 'Migrate database to new schema',
       status: 'OPEN',
       userId: user.id,
-      timeEntries: {
+      taskEntries: {
         create: [
           {
-            description: 'Initial consultation and document gathering',
+            description: 'Initial planning and requirements gathering',
             minutes: 60,
           },
-          { description: 'Reviewing non-disclosure agreements', minutes: 120 },
-          { description: 'Drafting response to opposing counsel', minutes: 45 },
+          { description: 'Writing migration scripts', minutes: 120 },
+          { description: 'Testing migration on staging environment', minutes: 45 },
         ],
       },
     },
   });
 
-  await prisma.matter.create({
+  await prisma.task.create({
     data: {
-      title: 'Real Estate Purchase - 123 Main St',
-      clientName: 'Alice Johnson',
+      title: 'Implement user authentication',
       status: 'OPEN',
       userId: user.id,
-      timeEntries: {
+      taskEntries: {
         create: [
-          { description: 'Drafting purchase agreement', minutes: 90 },
+          { description: 'Setting up JWT authentication', minutes: 90 },
           {
-            description: 'Reviewing title report and disclosures',
+            description: 'Writing login and registration endpoints',
             minutes: 60,
           },
           {
-            description: 'Client meeting regarding property inspection',
+            description: 'Adding auth guards to protected routes',
             minutes: 30,
           },
         ],
@@ -61,18 +59,17 @@ const main = async () => {
     },
   });
 
-  await prisma.matter.create({
+  await prisma.task.create({
     data: {
-      title: 'Corporate Incorporation - TechCorp',
-      clientName: 'TechCorp LLC',
+      title: 'Set up CI/CD pipeline',
       status: 'CLOSED',
       userId: user.id,
-      timeEntries: {
+      taskEntries: {
         create: [
-          { description: 'Filing articles of incorporation', minutes: 45 },
-          { description: 'Drafting operating agreement', minutes: 180 },
+          { description: 'Configuring GitHub Actions workflows', minutes: 45 },
+          { description: 'Writing Dockerfiles for production build', minutes: 180 },
           {
-            description: 'Preparing initial state tax registrations',
+            description: 'Setting up deployment scripts',
             minutes: 30,
           },
         ],
