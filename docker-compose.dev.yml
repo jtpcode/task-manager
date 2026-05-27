@@ -21,7 +21,9 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
-    container_name: task-manager-backend
+    image: dev-task-manager-backend
+    pull_policy: if_not_present
+    container_name: dev-task-manager-backend
     ports:
       - "3000:3000"
     environment:
@@ -41,7 +43,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
-    container_name: task-manager-frontend
+    image: dev-task-manager-frontend
+    pull_policy: if_not_present
+    container_name: dev-task-manager-frontend
     ports:
       - "5173:5173"
     environment:
