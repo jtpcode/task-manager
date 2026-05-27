@@ -7,8 +7,9 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 
-export interface LoginResponse {
-  access_token: string;
+interface AuthResult {
+  token: string;
+  email: string;
 }
 
 @Injectable()
@@ -18,7 +19,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async login(email: string, password: string): Promise<LoginResponse> {
+  async login(email: string, password: string): Promise<AuthResult> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user) {
@@ -32,10 +33,10 @@ export class AuthService {
     }
 
     const payload = { sub: user.id, email: user.email };
-    return { access_token: this.jwtService.sign(payload) };
+    return { token: this.jwtService.sign(payload), email: user.email };
   }
 
-  async register(email: string, password: string): Promise<LoginResponse> {
+  async register(email: string, password: string): Promise<AuthResult> {
     const existing = await this.prisma.user.findUnique({ where: { email } });
 
     if (existing) {
@@ -49,6 +50,6 @@ export class AuthService {
     });
 
     const payload = { sub: user.id, email: user.email };
-    return { access_token: this.jwtService.sign(payload) };
+    return { token: this.jwtService.sign(payload), email: user.email };
   }
 }

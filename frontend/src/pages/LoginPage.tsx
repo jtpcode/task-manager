@@ -33,8 +33,8 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      const data = await loginUser(email, password);
-      login(data.access_token);
+      await loginUser(email, password);
+      login();
       navigate('/');
     } catch (err) {
       if (err instanceof ApiError && (err.status === 401 || err.status === 422)) {

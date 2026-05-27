@@ -75,7 +75,6 @@ npm run test:e2e
 
 ## Future Improvements
 
-- **Registration**: Implement user registration and account management features.
 - **State Management**: Implement for example TanStack Query for frontend state management.
 - **Task Management**: Add features for deleting, editing, and modifying individual tasks like changing their status.
 - **Task Entry Management**: Add features for deleting, editing, and modifying individual task entries.

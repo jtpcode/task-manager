@@ -12,11 +12,10 @@ import type { TaskEntry } from '../types/api';
 
 interface AddTaskEntryFormProps {
   taskId: number;
-  token: string;
   onSuccess: (entry: TaskEntry) => void;
 }
 
-const AddTaskEntryForm = ({ taskId, token, onSuccess }: AddTaskEntryFormProps) => {
+const AddTaskEntryForm = ({ taskId, onSuccess }: AddTaskEntryFormProps) => {
   const [description, setDescription] = useState('');
   const [minutes, setMinutes] = useState('');
   const [date, setDate] = useState('');
@@ -27,7 +26,7 @@ const AddTaskEntryForm = ({ taskId, token, onSuccess }: AddTaskEntryFormProps) =
     setFormError(null);
     setSubmitting(true);
     try {
-      const entry = await createTaskEntry(token, taskId, {
+      const entry = await createTaskEntry(taskId, {
         description,
         minutes: Number(minutes),
         ...(date !== '' && { date }),

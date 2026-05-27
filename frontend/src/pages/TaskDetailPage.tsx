@@ -30,7 +30,7 @@ interface LocationState {
 
 const TaskDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { token, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const task = (location.state as LocationState | null)?.task ?? null;
@@ -44,7 +44,7 @@ const TaskDetailPage = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        setEntries(await fetchTaskEntries(token!, taskId));
+        setEntries(await fetchTaskEntries(taskId));
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
           logout();
@@ -60,7 +60,7 @@ const TaskDetailPage = () => {
     };
 
     void load();
-  }, [token, taskId, logout, navigate]);
+  }, [taskId, logout, navigate]);
 
   const handleLogout = () => {
     logout();
@@ -108,7 +108,6 @@ const TaskDetailPage = () => {
 
         <AddTaskEntryForm
           taskId={taskId}
-          token={token!}
           onSuccess={(entry) =>
             setEntries((prev) =>
               [...prev, entry].sort((a, b) => {
@@ -151,7 +150,7 @@ const TaskDetailPage = () => {
 
         <Divider sx={{ my: 3 }} />
 
-        <AiSummary taskId={taskId} token={token!} />
+        <AiSummary taskId={taskId} />
       </Box>
     </Box>
   );

@@ -4,6 +4,7 @@ import {
   UnprocessableEntityException,
   ValidationPipe,
 } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import * as bcrypt from 'bcrypt';
@@ -23,7 +24,7 @@ const OTHER_USER_PASSWORD = 'password456';
 describe('Tasks (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
-  let authToken: string;
+  let authCookie: string;
   let alphaTaskId: number;
   let betaTaskId: number;
   let otherTaskId: number;
@@ -34,6 +35,7 @@ describe('Tasks (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.use(cookieParser());
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -91,12 +93,13 @@ describe('Tasks (e2e)', () => {
       },
     });
 
-    // Obtain a valid JWT for the primary test user
+    // Obtain a valid auth cookie for the primary test user
     const loginRes = await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: TEST_USER_EMAIL, password: TEST_USER_PASSWORD });
 
-    authToken = (loginRes.body as { access_token: string }).access_token;
+    const setCookie = loginRes.headers['set-cookie'] as unknown as string[] | undefined;
+    authCookie = setCookie?.find((c) => c.startsWith('access_token='))?.split(';')[0] ?? '';
 
     const alphaT = await prisma.task.findFirstOrThrow({
       where: { title: 'Test Task Alpha', userId: user.id },
@@ -131,14 +134,14 @@ describe('Tasks (e2e)', () => {
     it('returns 401 when an invalid token is provided', async () => {
       const res = await request(app.getHttpServer())
         .get('/tasks')
-        .set('Authorization', 'Bearer invalidtoken');
+        .set('Cookie', 'access_token=invalidtoken');
       expect(res.status).toBe(401);
     });
 
     it('returns 200 with an array of tasks for the authenticated user', async () => {
       const res = await request(app.getHttpServer())
         .get('/tasks')
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
@@ -150,7 +153,7 @@ describe('Tasks (e2e)', () => {
     it('returns tasks with the correct fields', async () => {
       const res = await request(app.getHttpServer())
         .get('/tasks')
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
 
       const tasks = res.body as TaskResponse[];
       for (const task of tasks) {
@@ -168,7 +171,7 @@ describe('Tasks (e2e)', () => {
     it('computes totalMinutes correctly from task entries', async () => {
       const res = await request(app.getHttpServer())
         .get('/tasks')
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
 
       const tasks = res.body as TaskResponse[];
       // Ordered by createdAt desc — Beta was created second, so it comes first
@@ -184,7 +187,7 @@ describe('Tasks (e2e)', () => {
     it('does not return tasks belonging to other users', async () => {
       const res = await request(app.getHttpServer())
         .get('/tasks')
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
 
       const tasks = res.body as TaskResponse[];
       const titles = tasks.map((t) => t.title);
@@ -203,7 +206,7 @@ describe('Tasks (e2e)', () => {
     it('returns 401 when an invalid token is provided', async () => {
       const res = await request(app.getHttpServer())
         .post('/tasks')
-        .set('Authorization', 'Bearer invalidtoken')
+        .set('Cookie', 'access_token=invalidtoken')
         .send({ title: 'New Task' });
       expect(res.status).toBe(401);
     });
@@ -211,7 +214,7 @@ describe('Tasks (e2e)', () => {
     it('returns 422 when title is missing', async () => {
       const res = await request(app.getHttpServer())
         .post('/tasks')
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', authCookie)
         .send({});
       expect(res.status).toBe(422);
     });
@@ -219,7 +222,7 @@ describe('Tasks (e2e)', () => {
     it('returns 422 when title is empty', async () => {
       const res = await request(app.getHttpServer())
         .post('/tasks')
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', authCookie)
         .send({ title: '' });
       expect(res.status).toBe(422);
     });
@@ -227,7 +230,7 @@ describe('Tasks (e2e)', () => {
     it('creates a task with default OPEN status and returns 201', async () => {
       const res = await request(app.getHttpServer())
         .post('/tasks')
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', authCookie)
         .send({ title: 'Created Task' });
 
       expect(res.status).toBe(201);
@@ -244,7 +247,7 @@ describe('Tasks (e2e)', () => {
     it('creates a task with explicit CLOSED status', async () => {
       const res = await request(app.getHttpServer())
         .post('/tasks')
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', authCookie)
         .send({
           title: 'Closed Task',
           status: 'CLOSED',
@@ -257,13 +260,13 @@ describe('Tasks (e2e)', () => {
     it('does not create tasks for other users', async () => {
       await request(app.getHttpServer())
         .post('/tasks')
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', authCookie)
         .send({ title: 'Isolated Task' });
 
       // Verify it appears in the creating user's list
       const listRes = await request(app.getHttpServer())
         .get('/tasks')
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
 
       const titles = (listRes.body as TaskResponse[]).map((t) => t.title);
       expect(titles).toContain('Isolated Task');
@@ -281,28 +284,28 @@ describe('Tasks (e2e)', () => {
     it('returns 401 when an invalid token is provided', async () => {
       const res = await request(app.getHttpServer())
         .get(`/tasks/${alphaTaskId}/task-entries`)
-        .set('Authorization', 'Bearer invalidtoken');
+        .set('Cookie', 'access_token=invalidtoken');
       expect(res.status).toBe(401);
     });
 
     it('returns 404 for a non-existent task id', async () => {
       const res = await request(app.getHttpServer())
         .get('/tasks/999999/task-entries')
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
       expect(res.status).toBe(404);
     });
 
     it('returns 404 for a task belonging to another user', async () => {
       const res = await request(app.getHttpServer())
         .get(`/tasks/${otherTaskId}/task-entries`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
       expect(res.status).toBe(404);
     });
 
     it('returns 200 with an array of task entries', async () => {
       const res = await request(app.getHttpServer())
         .get(`/tasks/${alphaTaskId}/task-entries`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
     });
@@ -310,19 +313,19 @@ describe('Tasks (e2e)', () => {
     it('returns the correct number of entries for each task', async () => {
       const alphaRes = await request(app.getHttpServer())
         .get(`/tasks/${alphaTaskId}/task-entries`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
       expect((alphaRes.body as TaskEntryResponse[]).length).toBe(2);
 
       const betaRes = await request(app.getHttpServer())
         .get(`/tasks/${betaTaskId}/task-entries`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
       expect((betaRes.body as TaskEntryResponse[]).length).toBe(1);
     });
 
     it('returns task entries with the correct fields', async () => {
       const res = await request(app.getHttpServer())
         .get(`/tasks/${alphaTaskId}/task-entries`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
 
       const entries = res.body as TaskEntryResponse[];
       for (const entry of entries) {
@@ -341,7 +344,7 @@ describe('Tasks (e2e)', () => {
     it('returns correct minutes values for Alpha task entries', async () => {
       const res = await request(app.getHttpServer())
         .get(`/tasks/${alphaTaskId}/task-entries`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
 
       const entries = res.body as TaskEntryResponse[];
       const minuteValues = entries.map((e) => e.minutes).sort((a, b) => a - b);
@@ -351,7 +354,7 @@ describe('Tasks (e2e)', () => {
     it('returns correct minutes value for Beta task entry', async () => {
       const res = await request(app.getHttpServer())
         .get(`/tasks/${betaTaskId}/task-entries`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
 
       const entries = res.body as TaskEntryResponse[];
       expect(entries[0].minutes).toBe(30);
@@ -369,7 +372,7 @@ describe('Tasks (e2e)', () => {
     it('returns 401 when an invalid token is provided', async () => {
       const res = await request(app.getHttpServer())
         .post(`/tasks/${alphaTaskId}/task-entries`)
-        .set('Authorization', 'Bearer invalidtoken')
+        .set('Cookie', 'access_token=invalidtoken')
         .send({ description: 'Work', minutes: 30 });
       expect(res.status).toBe(401);
     });
@@ -377,7 +380,7 @@ describe('Tasks (e2e)', () => {
     it('returns 404 for a non-existent task id', async () => {
       const res = await request(app.getHttpServer())
         .post('/tasks/999999/task-entries')
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', authCookie)
         .send({ description: 'Work', minutes: 30 });
       expect(res.status).toBe(404);
     });
@@ -385,7 +388,7 @@ describe('Tasks (e2e)', () => {
     it('returns 404 for a task belonging to another user', async () => {
       const res = await request(app.getHttpServer())
         .post(`/tasks/${otherTaskId}/task-entries`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', authCookie)
         .send({ description: 'Work', minutes: 30 });
       expect(res.status).toBe(404);
     });
@@ -393,7 +396,7 @@ describe('Tasks (e2e)', () => {
     it('returns 422 when description is missing', async () => {
       const res = await request(app.getHttpServer())
         .post(`/tasks/${alphaTaskId}/task-entries`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', authCookie)
         .send({ minutes: 30 });
       expect(res.status).toBe(422);
     });
@@ -401,7 +404,7 @@ describe('Tasks (e2e)', () => {
     it('returns 422 when minutes is missing', async () => {
       const res = await request(app.getHttpServer())
         .post(`/tasks/${alphaTaskId}/task-entries`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', authCookie)
         .send({ description: 'Work' });
       expect(res.status).toBe(422);
     });
@@ -409,7 +412,7 @@ describe('Tasks (e2e)', () => {
     it('returns 422 when minutes is 0', async () => {
       const res = await request(app.getHttpServer())
         .post(`/tasks/${alphaTaskId}/task-entries`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', authCookie)
         .send({ description: 'Work', minutes: 0 });
       expect(res.status).toBe(422);
     });
@@ -417,7 +420,7 @@ describe('Tasks (e2e)', () => {
     it('returns 422 when minutes is negative', async () => {
       const res = await request(app.getHttpServer())
         .post(`/tasks/${alphaTaskId}/task-entries`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', authCookie)
         .send({ description: 'Work', minutes: -10 });
       expect(res.status).toBe(422);
     });
@@ -425,7 +428,7 @@ describe('Tasks (e2e)', () => {
     it('creates a task entry with an explicit date and returns 201', async () => {
       const res = await request(app.getHttpServer())
         .post(`/tasks/${betaTaskId}/task-entries`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', authCookie)
         .send({ description: 'Review', minutes: 45, date: '2026-01-15' });
 
       expect(res.status).toBe(201);
@@ -442,7 +445,7 @@ describe('Tasks (e2e)', () => {
     it('creates a task entry without a date (defaults to now) and returns 201', async () => {
       const res = await request(app.getHttpServer())
         .post(`/tasks/${betaTaskId}/task-entries`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', authCookie)
         .send({ description: 'Filing', minutes: 20 });
 
       expect(res.status).toBe(201);
@@ -455,12 +458,12 @@ describe('Tasks (e2e)', () => {
     it('new entry appears in subsequent GET /tasks/:id/task-entries', async () => {
       await request(app.getHttpServer())
         .post(`/tasks/${alphaTaskId}/task-entries`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', authCookie)
         .send({ description: 'Verification entry', minutes: 15 });
 
       const listRes = await request(app.getHttpServer())
         .get(`/tasks/${alphaTaskId}/task-entries`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
 
       const entries = listRes.body as TaskEntryResponse[];
       expect(entries.some((e) => e.description === 'Verification entry')).toBe(
@@ -480,21 +483,21 @@ describe('Tasks (e2e)', () => {
     it('returns 401 when an invalid token is provided', async () => {
       const res = await request(app.getHttpServer())
         .get(`/tasks/${alphaTaskId}/summary`)
-        .set('Authorization', 'Bearer invalidtoken');
+        .set('Cookie', 'access_token=invalidtoken');
       expect(res.status).toBe(401);
     });
 
     it('returns 404 for a non-existent task id', async () => {
       const res = await request(app.getHttpServer())
         .get('/tasks/999999/summary')
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
       expect(res.status).toBe(404);
     });
 
     it('returns 404 for a task belonging to another user', async () => {
       const res = await request(app.getHttpServer())
         .get(`/tasks/${otherTaskId}/summary`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
       expect(res.status).toBe(404);
     });
 
@@ -504,7 +507,7 @@ describe('Tasks (e2e)', () => {
 
       const res = await request(app.getHttpServer())
         .get(`/tasks/${alphaTaskId}/summary`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
 
       process.env['GOOGLE_AI_API_KEY'] = original;
       expect(res.status).toBe(503);
@@ -513,13 +516,13 @@ describe('Tasks (e2e)', () => {
     it('returns 400 when the task has no task entries', async () => {
       const createRes = await request(app.getHttpServer())
         .post('/tasks')
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', authCookie)
         .send({ title: 'Empty Task' });
       const emptyTaskId = (createRes.body as TaskResponse).id;
 
       const res = await request(app.getHttpServer())
         .get(`/tasks/${emptyTaskId}/summary`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Cookie', authCookie);
       expect(res.status).toBe(400);
     });
   });

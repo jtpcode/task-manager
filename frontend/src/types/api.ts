@@ -2,8 +2,12 @@ export interface SummaryResponse {
   summary: string;
 }
 
-export interface LoginResponse {
-  access_token: string;
+export interface AuthResponse {
+  email: string;
+}
+
+export interface AuthMeResponse {
+  email: string;
 }
 
 export interface RegisterRequest {

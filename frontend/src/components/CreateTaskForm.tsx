@@ -9,7 +9,6 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import type { SelectChangeEvent } from '@mui/material/Select';
-import { useAuth } from '../hooks/useAuth';
 import { createTask } from '../services/tasks.service';
 import { ApiError } from '../services/apiError';
 import type { Task } from '../types/api';
@@ -19,7 +18,6 @@ interface CreateTaskFormProps {
 }
 
 const CreateTaskForm = ({ onSuccess }: CreateTaskFormProps) => {
-  const { token } = useAuth();
 
   const [title, setTitle] = useState('');
   const [status, setStatus] = useState<'OPEN' | 'CLOSED'>('OPEN');
@@ -31,7 +29,7 @@ const CreateTaskForm = ({ onSuccess }: CreateTaskFormProps) => {
     setSubmitting(true);
 
     try {
-      const task: Task = await createTask(token!, { title, status });
+      const task: Task = await createTask({ title, status });
       setTitle('');
       setStatus('OPEN');
       onSuccess(task);

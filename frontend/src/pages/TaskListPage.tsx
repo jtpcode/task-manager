@@ -23,7 +23,7 @@ import type { Task } from '../types/api';
 import CreateTaskForm from '../components/CreateTaskForm';
 
 const TaskListPage = () => {
-  const { token, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -39,7 +39,7 @@ const TaskListPage = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        setTasks(await fetchTasks(token!));
+        setTasks(await fetchTasks());
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
           logout();
@@ -53,7 +53,7 @@ const TaskListPage = () => {
     };
 
     void load();
-  }, [token, logout, navigate]);
+  }, [logout, navigate]);
 
   if (loading) {
     return (

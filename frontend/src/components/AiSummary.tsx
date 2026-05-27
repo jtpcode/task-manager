@@ -10,10 +10,9 @@ import { ApiError } from '../services/apiError';
 
 interface AiSummaryProps {
   taskId: number;
-  token: string;
 }
 
-const AiSummary = ({ taskId, token }: AiSummaryProps) => {
+const AiSummary = ({ taskId }: AiSummaryProps) => {
   const [summary, setSummary] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +21,7 @@ const AiSummary = ({ taskId, token }: AiSummaryProps) => {
     setError(null);
     setLoading(true);
     try {
-      const { summary: fetched } = await fetchSummary(token, taskId);
+      const { summary: fetched } = await fetchSummary(taskId);
       setSummary(fetched);
     } catch (err: unknown) {
       if (err instanceof ApiError && err.status === 400) {

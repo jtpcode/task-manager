@@ -42,8 +42,8 @@ const RegisterPage = () => {
     setLoading(true);
 
     try {
-      const data = await registerUser(email, password);
-      login(data.access_token);
+      await registerUser(email, password);
+      login();
       navigate('/');
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {

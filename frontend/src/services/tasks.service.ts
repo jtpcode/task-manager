@@ -1,9 +1,9 @@
 import { ApiError } from './apiError';
 import type { Task, CreateTaskRequest, TaskEntry, CreateTaskEntryRequest, SummaryResponse } from '../types/api';
 
-export const fetchTasks = async (token: string): Promise<Task[]> => {
+export const fetchTasks = async (): Promise<Task[]> => {
   const response = await fetch('/api/tasks', {
-    headers: { Authorization: `Bearer ${token}` },
+    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -14,15 +14,12 @@ export const fetchTasks = async (token: string): Promise<Task[]> => {
 };
 
 export const createTask = async (
-  token: string,
   data: CreateTaskRequest,
 ): Promise<Task> => {
   const response = await fetch('/api/tasks', {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(data),
   });
 
@@ -34,11 +31,10 @@ export const createTask = async (
 };
 
 export const fetchTaskEntries = async (
-  token: string,
   taskId: number,
 ): Promise<TaskEntry[]> => {
   const response = await fetch(`/api/tasks/${taskId}/task-entries`, {
-    headers: { Authorization: `Bearer ${token}` },
+    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -49,16 +45,13 @@ export const fetchTaskEntries = async (
 };
 
 export const createTaskEntry = async (
-  token: string,
   taskId: number,
   data: CreateTaskEntryRequest,
 ): Promise<TaskEntry> => {
   const response = await fetch(`/api/tasks/${taskId}/task-entries`, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(data),
   });
 
@@ -70,11 +63,10 @@ export const createTaskEntry = async (
 };
 
 export const fetchSummary = async (
-  token: string,
   taskId: number,
 ): Promise<SummaryResponse> => {
   const response = await fetch(`/api/tasks/${taskId}/summary`, {
-    headers: { Authorization: `Bearer ${token}` },
+    credentials: 'include',
   });
 
   if (!response.ok) {

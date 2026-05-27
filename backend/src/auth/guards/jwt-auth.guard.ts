@@ -30,8 +30,8 @@ export class JwtAuthGuard implements CanActivate {
 
     const request = context
       .switchToHttp()
-      .getRequest<Request & { user: JwtPayload }>();
-    const token = this.extractBearerToken(request);
+      .getRequest<Request & { user: JwtPayload; cookies: Record<string, string> }>();
+    const token = request.cookies['access_token'];
 
     if (!token) {
       throw new UnauthorizedException();
@@ -44,13 +44,5 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     return true;
-  }
-
-  private extractBearerToken(request: Request): string | undefined {
-    const authHeader = request.headers['authorization'];
-    if (!authHeader?.startsWith('Bearer ')) {
-      return undefined;
-    }
-    return authHeader.slice(7);
   }
 }
