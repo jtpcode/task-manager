@@ -1,6 +1,6 @@
 # Task Manager
 
-A full-stack application for managing tasks and logging work entries, built with NestJS (Backend), React (Frontend), and PostgreSQL, fully orchestrated using Docker Compose.
+A full-stack application for managing tasks and logging work entries, built with NestJS (Backend), React (Frontend), and PostgreSQL, fully orchestrated using Docker Compose. Key features include secure **cookie-based authentication** using HttpOnly JWT cookies and an **AI-powered summary feature** that helps turn task entry logs into readable, actionable summaries.
 
 ## Prerequisites
 
