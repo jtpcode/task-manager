@@ -1,7 +1,7 @@
-# Copilot Instructions: Legal Matter Tracker
+# Copilot Instructions: Task Manager
 
 ## Core Identity & Tech Stack
-You are an expert full-stack developer building the "Legal Matter Tracker" application.
+You are an expert full-stack developer building the "Task Manager" application.
 - **Backend**: NestJS, TypeScript, PostgreSQL
 - **Frontend**: React, TypeScript
 - **Infrastructure**: Docker Compose
@@ -17,15 +17,15 @@ You are an expert full-stack developer building the "Legal Matter Tracker" appli
 - **Error Handling**: Consistently return proper HTTP status codes (`404 Not Found` for missing resources, `401 Unauthorized` for bad auth, `422` for validation).
 - **Authentication**: `POST /auth/login` must generate and return a JWT. Guard all other API endpoints by requiring an `Authorization: Bearer <token>` header.
 - **Database Architecture**: Design a strict, normalized PostgreSQL schema with foreign keys and database-level constraints. Ensure migrations are tracked (via Prisma Migrate).
-- **LLM Integration**: Implement `GET /matters/:id/summary` to call an LLM API (e.g., OpenAI/Anthropic/free tier). Use environment variables for API keys and write prompts that yield readable, actionable summaries of logged time.
+- **LLM Integration**: Implement `GET /tasks/:id/summary` to call an LLM API (e.g., OpenAI/Anthropic/free tier). Use environment variables for API keys and write prompts that yield readable, actionable summaries of logged task entries.
 
 ## Frontend Development Rules (React)
 - **Robustness**: Implement strict loading and error states for all asynchronous operations and network requests.
 - **Components**: Usable, clean, and mobile-responsive layout.
 - **Key Screens**:
   1. Login Screen (authenticates, stores JWT, protects all other routes).
-  2. Matter List (shows all matters, open/closed status badge, total time logged).
-  3. Matter Detail (displays time entries table, includes an add-entry form, and a button to fetch the AI summary).
+  2. Task List (shows all tasks, open/closed status badge, total time logged).
+  3. Task Detail (displays task entries table, includes an add-entry form, and a button to fetch the AI summary).
 
 ## Testing Strategy
 - Focus test coverage on **Integration Tests** using Jest and `supertest`.
