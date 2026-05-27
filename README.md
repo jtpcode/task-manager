@@ -1,6 +1,6 @@
-# Legal Matter Tracker
+# Task Manager
 
-A full-stack application for managing legal matters, built with NestJS (Backend), React (Frontend), and PostgreSQL, fully orchestrated using Docker Compose.
+A full-stack application for managing tasks and logging work entries, built with NestJS (Backend), React (Frontend), and PostgreSQL, fully orchestrated using Docker Compose.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ Follow these steps to clone the repository and start the production/development 
 
 ```bash
 git clone <repository-url>
-cd legal-matter-tracker
+cd task-manager
 ```
 
 ### 2. Configure Environment Variables
@@ -86,11 +86,10 @@ npm run test:e2e
 ## Future Improvements
 
 - **State Management**: Implement for example TanStack Query for frontend state management.
-- **Matter Management**: Add features for deleting, editing, and modifying individual legal matters like changing their status.
-- **Time Entry Management**:Add features for deleting, editing, and modifying individual time entries.
+- **Task Management**: Add features for deleting, editing, and modifying individual tasks like changing their status.
+- **Task Entry Management**: Add features for deleting, editing, and modifying individual task entries.
 - **User Profile**: Allow users to view and edit their own profile information.
 - **AI Enhancements**: Improve AI prompt engineering and save the generated summaries to the database.
 - **Logging and Monitoring**: Implement logging and monitoring for the application.
-- **The list goes on..**
 
 

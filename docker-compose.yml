@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:18
-    container_name: legal-tracker-db
+    container_name: task-manager-db
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -21,7 +21,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: legal-tracker-backend
+    container_name: task-manager-backend
     ports:
       - "3000:3000"
     environment:
@@ -36,7 +36,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: legal-tracker-frontend
+    container_name: task-manager-frontend
     ports:
       - "5173:5173"
     environment:
