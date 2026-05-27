@@ -3,11 +3,11 @@ import TableRow from '@mui/material/TableRow';
 import type { TaskEntry } from '../types/api';
 import { formatMinutes, formatDate } from '../utils/formatters';
 
-interface TimeEntryRowProps {
+interface TaskEntryRowProps {
   entry: TaskEntry;
 }
 
-const TimeEntryRow = ({ entry }: TimeEntryRowProps) => (
+const TaskEntryRow = ({ entry }: TaskEntryRowProps) => (
   <TableRow>
     <TableCell>{formatDate(entry.date)}</TableCell>
     <TableCell>{entry.description}</TableCell>
@@ -15,4 +15,4 @@ const TimeEntryRow = ({ entry }: TimeEntryRowProps) => (
   </TableRow>
 );
 
-export default TimeEntryRow;
+export default TaskEntryRow;

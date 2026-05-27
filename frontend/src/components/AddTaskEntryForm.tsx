@@ -10,13 +10,13 @@ import { createTaskEntry } from '../services/tasks.service';
 import { ApiError } from '../services/apiError';
 import type { TaskEntry } from '../types/api';
 
-interface AddTimeEntryFormProps {
+interface AddTaskEntryFormProps {
   taskId: number;
   token: string;
   onSuccess: (entry: TaskEntry) => void;
 }
 
-const AddTimeEntryForm = ({ taskId, token, onSuccess }: AddTimeEntryFormProps) => {
+const AddTaskEntryForm = ({ taskId, token, onSuccess }: AddTaskEntryFormProps) => {
   const [description, setDescription] = useState('');
   const [minutes, setMinutes] = useState('');
   const [date, setDate] = useState('');
@@ -102,4 +102,4 @@ const AddTimeEntryForm = ({ taskId, token, onSuccess }: AddTimeEntryFormProps) =
   );
 };
 
-export default AddTimeEntryForm;
+export default AddTaskEntryForm;

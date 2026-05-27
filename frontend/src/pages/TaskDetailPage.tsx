@@ -16,9 +16,9 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import AddTimeEntryForm from '../components/AddTimeEntryForm';
+import AddTaskEntryForm from '../components/AddTaskEntryForm';
 import AiSummary from '../components/AiSummary';
-import TimeEntryRow from '../components/TimeEntryRow';
+import TaskEntryRow from '../components/TaskEntryRow';
 import { useAuth } from '../hooks/useAuth';
 import { fetchTaskEntries } from '../services/tasks.service';
 import { ApiError } from '../services/apiError';
@@ -106,7 +106,7 @@ const TaskDetailPage = () => {
           Task Entries
         </Typography>
 
-        <AddTimeEntryForm
+        <AddTaskEntryForm
           taskId={taskId}
           token={token!}
           onSuccess={(entry) =>
@@ -142,7 +142,7 @@ const TaskDetailPage = () => {
               </TableHead>
               <TableBody>
                 {entries.map((entry) => (
-                  <TimeEntryRow key={entry.id} entry={entry} />
+                  <TaskEntryRow key={entry.id} entry={entry} />
                 ))}
               </TableBody>
             </Table>
