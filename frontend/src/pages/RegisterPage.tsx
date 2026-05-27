@@ -14,31 +14,42 @@ import Typography from '@mui/material/Typography';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useAuth } from '../hooks/useAuth';
-import { login as loginUser } from '../services/auth.service';
+import { register as registerUser } from '../services/auth.service';
 import { ApiError } from '../services/apiError';
 
-const LoginPage = () => {
+const RegisterPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const passwordMismatch =
+    confirmPassword.length > 0 && password !== confirmPassword;
+
   const handleSubmit = async (e: React.BaseSyntheticEvent) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
     setError(null);
     setLoading(true);
 
     try {
-      const data = await loginUser(email, password);
+      const data = await registerUser(email, password);
       login(data.access_token);
       navigate('/');
     } catch (err) {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 422)) {
-        setError('Invalid email or password.');
+      if (err instanceof ApiError && err.status === 409) {
+        setError('An account with this email already exists.');
+      } else if (err instanceof ApiError && err.status === 422) {
+        setError('Please enter a valid email and a password of at least 8 characters.');
       } else {
         setError('Could not reach the server. Please try again.');
       }
@@ -66,7 +77,7 @@ const LoginPage = () => {
           Task Manager
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Sign in to your account
+          Create a new account
         </Typography>
 
         {error && (
@@ -91,10 +102,11 @@ const LoginPage = () => {
             type={showPassword ? 'text' : 'password'}
             fullWidth
             required
-            autoComplete="current-password"
+            autoComplete="new-password"
+            helperText="Minimum 8 characters"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            sx={{ mb: 3 }}
+            sx={{ mb: 2 }}
             slotProps={{
               input: {
                 endAdornment: (
@@ -113,24 +125,59 @@ const LoginPage = () => {
               },
             }}
           />
+          <TextField
+            label="Confirm Password"
+            type={showConfirmPassword ? 'text' : 'password'}
+            fullWidth
+            required
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            error={passwordMismatch}
+            helperText={passwordMismatch ? 'Passwords do not match' : ' '}
+            sx={{ mb: 3 }}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={
+                        showConfirmPassword
+                          ? 'Hide password'
+                          : 'Show password'
+                      }
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                      edge="end"
+                    >
+                      {showConfirmPassword ? (
+                        <VisibilityOff />
+                      ) : (
+                        <Visibility />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
           <Button
             type="submit"
             variant="contained"
             fullWidth
             size="large"
-            disabled={loading}
+            disabled={loading || passwordMismatch}
             startIcon={
               loading ? <CircularProgress size={18} color="inherit" /> : null
             }
           >
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? 'Creating account…' : 'Create account'}
           </Button>
         </Box>
 
         <Typography variant="body2" align="center" sx={{ mt: 2 }}>
-          Don&apos;t have an account?{' '}
-          <Link component={RouterLink} to="/register">
-            Sign up
+          Already have an account?{' '}
+          <Link component={RouterLink} to="/login">
+            Sign in
           </Link>
         </Typography>
       </Paper>
@@ -138,4 +185,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default RegisterPage;

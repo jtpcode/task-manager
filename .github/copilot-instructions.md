@@ -43,8 +43,3 @@ You are an expert full-stack developer building the "Task Manager" application.
 - Never erase existing comment texts
 - **Always use arrow function syntax** (`const fn = () => {}`) instead of `function` declarations for all standalone functions, React components, hooks, and services. Class methods in NestJS controllers/services are exempt.
 
-## Out of Scope
-Skip the following to focus on core constraints:
-- Pixel-perfect or heavily polished UI.
-- Advanced security hardening beyond standard JWT implementation.
-- Pagination or complex filtering on list views.

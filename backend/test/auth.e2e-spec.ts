@@ -125,4 +125,72 @@ describe('Auth (e2e)', () => {
       expect(res.status).toBe(200);
     });
   });
+
+  describe('POST /auth/register', () => {
+    const REGISTER_EMAIL = 'register-test@example.com';
+    const REGISTER_PASSWORD = 'securepass';
+
+    afterEach(async () => {
+      await prisma.user.deleteMany({ where: { email: REGISTER_EMAIL } });
+    });
+
+    it('returns 201 with access_token on valid registration', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email: REGISTER_EMAIL, password: REGISTER_PASSWORD });
+
+      const body = res.body as { access_token: string };
+      expect(res.status).toBe(201);
+      expect(body).toHaveProperty('access_token');
+      expect(typeof body.access_token).toBe('string');
+      expect(body.access_token.length).toBeGreaterThan(0);
+    });
+
+    it('returns 409 when email is already registered', async () => {
+      await prisma.user.create({
+        data: {
+          email: REGISTER_EMAIL,
+          password: await bcrypt.hash(REGISTER_PASSWORD, 10),
+        },
+      });
+
+      const res = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email: REGISTER_EMAIL, password: REGISTER_PASSWORD });
+
+      expect(res.status).toBe(409);
+    });
+
+    it('returns 422 when body is empty', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({});
+
+      expect(res.status).toBe(422);
+    });
+
+    it('returns 422 when email format is invalid', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email: 'not-an-email', password: REGISTER_PASSWORD });
+
+      expect(res.status).toBe(422);
+    });
+
+    it('returns 422 when password is shorter than 8 characters', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email: REGISTER_EMAIL, password: 'short' });
+
+      expect(res.status).toBe(422);
+    });
+
+    it('returns 422 when password is missing', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email: REGISTER_EMAIL });
+
+      expect(res.status).toBe(422);
+    });
+  });
 });
