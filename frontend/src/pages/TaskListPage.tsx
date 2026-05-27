@@ -111,7 +111,7 @@ const TaskListPage = () => {
         </Paper>
       </Collapse>
 
-      {matters.length === 0 ? (
+      {tasks.length === 0 ? (
         <Typography color="text.secondary">No tasks found.</Typography>
       ) : (
         <TableContainer component={Paper}>
